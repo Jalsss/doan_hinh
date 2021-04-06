@@ -10,6 +10,7 @@ class Images {
   static const String Photo = "assets/images/photodune.png";
   static const String Video = "assets/images/videohive.png";
 
+
   ///Singleton factory
   static final Images _instance = Images._internal();
 

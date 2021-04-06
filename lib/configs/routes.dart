@@ -1,3 +1,5 @@
+import 'package:doan_hinh/screens/gamesScreen/game_screen.dart';
+import 'package:doan_hinh/screens/home/home.dart';
 import 'package:doan_hinh/screens/screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +7,7 @@ import 'package:flutter/material.dart';
 class Routes {
   static const String home = "/home";
   static const String signIn = "/signIn";
-  static const String forgotPassword = "/forgotPassword";
+  static const String gameScreen = "/game_screen";
   static const String editProfile = "/editProfile";
   static const String changePassword = "/changePassword";
   static const String changeLanguage = "/changeLanguage";
@@ -37,12 +39,18 @@ class Routes {
           },
           fullscreenDialog: true,
         );
-      // case changeLanguage:
-      //   return MaterialPageRoute(
-      //     builder: (context) {
-      //       return LanguageSetting();
-      //     },
-      //   );
+      case home:
+        return MaterialPageRoute(
+          builder: (context) {
+            return Home();
+          },
+        );
+      case gameScreen:
+        return MaterialPageRoute(
+          builder: (context) {
+            return GameScreen();
+          },
+        );
       // case themeSetting:
       //   return MaterialPageRoute(
       //     builder: (context) {

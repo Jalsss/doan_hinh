@@ -2,6 +2,7 @@
     package="com.example.doan_hinh">
    <application
         android:label="doan_hinh"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
