@@ -25,6 +25,7 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
+  bool isLoading = false;
   @override
   void initState() {
     super.initState();
@@ -32,6 +33,9 @@ class _SignInState extends State<SignIn> {
   final facebookLogin = FacebookLogin();
 
   login(String route) async {
+    setState(() {
+      isLoading = true;
+    });
     facebookLogin.loginBehavior = FacebookLoginBehavior.webViewOnly;
     final result = await facebookLogin.logIn(['email', 'public_profile']);
     switch (result.status) {
@@ -48,10 +52,10 @@ class _SignInState extends State<SignIn> {
           final res  = await get(Constant.apiAdress + '/api/mobile/fbAdd.asmx/fbAdd'+ data);
           if(res.statusCode == 200) {
             String dataFcm = "?mID=12&appID=" + appID + "&token=" + json.decode(res.body)['data'] + "&appSystem=" + appSystem;
-            final response = await get(Constant.apiAdress + '/api/mobile/game.asmx/fcmAdd' + dataFcm);
+            await get(Constant.apiAdress + '/api/mobile/game.asmx/fcmAdd' + dataFcm);
             _storage.writeValue('isSignIn', 'true');
             _storage.writeValue('appID', appID);
-            Navigator.pushNamed(context, route);
+            Navigator.pushReplacementNamed(context, route);
           } else {
             return showDialog(
               context: context,
@@ -61,13 +65,22 @@ class _SignInState extends State<SignIn> {
             );
           }
 
-
+          setState(() {
+            isLoading = false;
+          });
         }
         break;
       case FacebookLoginStatus.cancelledByUser:
-        return AlertDialog(title :Text('Thông báo'),content: Text('Đăng nhập thất bại'));
+        setState(() {
+          isLoading = true;
+         });
+        return showDialog(context: context, builder: (builder) { return AlertDialog(title :Text('Thông báo'),content: Text('Đăng nhập thất bại'));});
+
         break;
       case FacebookLoginStatus.error:
+        setState(() {
+          isLoading = true;
+        });
         print(result.errorMessage);
         break;
     }
@@ -106,6 +119,7 @@ class _SignInState extends State<SignIn> {
                                   'Đăng nhập bằng facebook',
                                   icon: Icon(Icons.ac_unit),
                                   onPressed: () => login(Routes.home),
+                                  loading: isLoading,
                                 )
                               ),
                             ],

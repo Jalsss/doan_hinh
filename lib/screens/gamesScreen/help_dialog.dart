@@ -6,6 +6,7 @@ class HelpDialog extends StatefulWidget {
   final String openCharacter;
   final String openAnswer;
   final String disableWrongCharacter;
+  final bool isDisableWrongCharacter;
   final Function() openCharacterF;
   final Function() openAnswerF;
   final Function() disableWrongCharacterF;
@@ -15,7 +16,8 @@ class HelpDialog extends StatefulWidget {
     this.disableWrongCharacter,
     this.openCharacterF,
     this.disableWrongCharacterF,
-    this.openAnswerF}) : super(key: key);
+    this.openAnswerF,
+    this.isDisableWrongCharacter}) : super(key: key);
 
   @override
   _HelpDialog createState() {
@@ -69,7 +71,7 @@ class _HelpDialog extends State<HelpDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppButton(
-                    widget.openCharacter + '  ',
+                    widget.openCharacter + (widget.openCharacter.length == 1 ? '  ' : ''),
                     type:ButtonType.outline,
                     icon: Icon(Icons.attach_money),
                     onPressed: () {
@@ -78,6 +80,7 @@ class _HelpDialog extends State<HelpDialog> {
                   ),
                   AppButton(
                     widget.disableWrongCharacter,
+                    disabled: widget.isDisableWrongCharacter,
                     type:ButtonType.outline,
                     icon: Icon(Icons.attach_money),
                     onPressed: () {

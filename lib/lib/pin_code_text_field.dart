@@ -621,6 +621,7 @@ class PinCodeTextFieldState extends State<PinCodeTextField>
         child: TextButton(
           style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
+              alignment: Alignment.center,
           ),
           child:Text(
           text,
@@ -633,6 +634,10 @@ class PinCodeTextFieldState extends State<PinCodeTextField>
       );
     } else {
       return TextButton(
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          alignment: Alignment.center,
+        ),
         child:Text(
             text,
             key: ValueKey<String>("${strList[i]}$i"),

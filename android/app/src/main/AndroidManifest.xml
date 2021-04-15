@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.doan_hinh">
    <application
-        android:label="doan_hinh"
+        android:label="Games"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -48,6 +48,10 @@
                <data android:scheme="@string/fb_login_protocol_scheme" />
            </intent-filter>
        </activity>
+       <meta-data
+           android:name="com.google.android.gms.ads.APPLICATION_ID"
+           android:value="ca-app-pub-1781546207717137~2614000915"/>
+
     </application>
     <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>

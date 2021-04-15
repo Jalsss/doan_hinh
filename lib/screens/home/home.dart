@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:doan_hinh/configs/routes.dart';
 import 'package:doan_hinh/constant/constant.dart';
 import 'package:doan_hinh/screens/gamesScreen/game_screen.dart';
@@ -17,19 +19,26 @@ class Home extends StatefulWidget {
   }
 }
 class _HomeState extends State<Home> {
+  bool isLoading = false;
   _HomeState();
-
   @override
   void initState() {
     super.initState();
   }
 
   start(String routes) async {
+    setState(() {
+      isLoading = true;
+    });
     var appID = await _storage.readValue('appID');
     String data = "?mID=12&appID=" + appID.toString();
     final res = await get(Constant.apiAdress + '/api/mobile/game.asmx/gameImgAdd' + data);
     print(res.body);
-    Navigator.pushNamed(context, routes);
+
+    await Navigator.pushReplacementNamed(context, Routes.gameScreen);
+    setState(() {
+      isLoading = false;
+    });
   }
   @override
   Widget build(BuildContext context) {
@@ -55,6 +64,7 @@ class _HomeState extends State<Home> {
                                 onPressed: () => {
                                   start(Routes.gameScreen)
                                 },
+                                loading: isLoading,
                               )
                           ),
 

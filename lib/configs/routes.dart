@@ -1,3 +1,4 @@
+import 'package:doan_hinh/screens/gamesScreen/end_question.dart';
 import 'package:doan_hinh/screens/gamesScreen/game_screen.dart';
 import 'package:doan_hinh/screens/home/home.dart';
 import 'package:doan_hinh/screens/screen.dart';
@@ -8,27 +9,7 @@ class Routes {
   static const String home = "/home";
   static const String signIn = "/signIn";
   static const String gameScreen = "/game_screen";
-  static const String editProfile = "/editProfile";
-  static const String changePassword = "/changePassword";
-  static const String changeLanguage = "/changeLanguage";
-  static const String themeSetting = "/themeSetting";
-  static const String setting = "/setting";
-  static const String fontSetting = "/fontSetting";
-  static const String statementFilter = "/statementFilter";
-  static const String statementRangePicker = "/statementRangePicker";
-  static const String pickerScreen = "/pickerScreen";
-  static const String notification = "/notification";
-  static const String portfolio = "/portfolio";
-  static const String listProduct = "/listProduct";
-  static const String productDetail = "/productDetail";
-  static const String bestSale = "/bestSale";
-  static const String topCountry = "/topCountry";
-  static const String device = "/device";
-  static const String serviceStatus = "/serviceStatus";
-  static const String about = "/about";
-  static const String webView = "/webView";
-  static const String report = "/report";
-  static const String invoiceCheck = "/invoiceCheck";
+  static const String endQuestion = "/end_question";
 
   Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -49,6 +30,12 @@ class Routes {
         return MaterialPageRoute(
           builder: (context) {
             return GameScreen();
+          },
+        );
+      case endQuestion:
+        return MaterialPageRoute(
+          builder: (context) {
+            return EndQuestion();
           },
         );
       // case themeSetting:
