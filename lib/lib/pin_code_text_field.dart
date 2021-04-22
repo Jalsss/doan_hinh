@@ -143,47 +143,47 @@ class PinCodeTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final EdgeInsets pinBoxOuterPadding;
   final bool hasUnderline;
-  final Function(int,String) removeFromResult;
+  final Function(int, String) removeFromResult;
 
-  const PinCodeTextField({
-    Key key,
-    this.isCupertino: false,
-    this.maxLength: 4,
-    this.controller,
-    this.hideCharacter: false,
-    this.highlight: false,
-    this.highlightAnimation: false,
-    this.highlightAnimationBeginColor: Colors.white,
-    this.highlightAnimationEndColor: Colors.black,
-    this.highlightAnimationDuration,
-    this.highlightColor: Colors.black,
-    this.pinBoxDecoration,
-    this.maskCharacter: "\u25CF",
-    this.pinBoxWidth: 70.0,
-    this.pinBoxHeight: 70.0,
-    this.pinTextStyle,
-    this.onDone,
-    this.defaultBorderColor: Colors.black,
-    this.hasTextBorderColor: Colors.black,
-    this.pinTextAnimatedSwitcherTransition,
-    this.pinTextAnimatedSwitcherDuration: const Duration(),
-    this.hasError: false,
-    this.errorBorderColor: Colors.red,
-    this.onTextChanged,
-    this.autofocus: false,
-    this.focusNode,
-    this.wrapAlignment: WrapAlignment.start,
-    this.textDirection: TextDirection.ltr,
-    this.keyboardType: TextInputType.number,
-    this.pinBoxOuterPadding = const EdgeInsets.symmetric(horizontal: 4.0),
-    this.pinBoxColor = Colors.white,
-    this.highlightPinBoxColor,
-    this.pinBoxBorderWidth = 2.0,
-    this.pinBoxRadius = 0,
-    this.hideDefaultKeyboard = false,
-    this.hasUnderline = false,
-    this.removeFromResult
-  }) : super(key: key);
+  const PinCodeTextField(
+      {Key key,
+      this.isCupertino: false,
+      this.maxLength: 4,
+      this.controller,
+      this.hideCharacter: false,
+      this.highlight: false,
+      this.highlightAnimation: false,
+      this.highlightAnimationBeginColor: Colors.white,
+      this.highlightAnimationEndColor: Colors.black,
+      this.highlightAnimationDuration,
+      this.highlightColor: Colors.black,
+      this.pinBoxDecoration,
+      this.maskCharacter: "\u25CF",
+      this.pinBoxWidth: 70.0,
+      this.pinBoxHeight: 70.0,
+      this.pinTextStyle,
+      this.onDone,
+      this.defaultBorderColor: Colors.black,
+      this.hasTextBorderColor: Colors.black,
+      this.pinTextAnimatedSwitcherTransition,
+      this.pinTextAnimatedSwitcherDuration: const Duration(),
+      this.hasError: false,
+      this.errorBorderColor: Colors.red,
+      this.onTextChanged,
+      this.autofocus: false,
+      this.focusNode,
+      this.wrapAlignment: WrapAlignment.start,
+      this.textDirection: TextDirection.ltr,
+      this.keyboardType: TextInputType.number,
+      this.pinBoxOuterPadding = const EdgeInsets.symmetric(horizontal: 4.0),
+      this.pinBoxColor = Colors.white,
+      this.highlightPinBoxColor,
+      this.pinBoxBorderWidth = 2.0,
+      this.pinBoxRadius = 0,
+      this.hideDefaultKeyboard = false,
+      this.hasUnderline = false,
+      this.removeFromResult})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -564,30 +564,24 @@ class PinCodeTextFieldState extends State<PinCodeTextField>
     } else {
       insets = widget.pinBoxOuterPadding;
     }
-    return Padding(
-      padding: insets,
-      child: Container(
+    return Stack(alignment: AlignmentDirectional.center,
+        children: <Widget>[
+      Image.asset(
+        'assets/images/Text-1.png',
+        width: MediaQuery.of(context).size.width * 0.1,
+      ),
+      Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 15),
+        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+        color: Colors.transparent,
         key: ValueKey<String>("container$i"),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 7),
-          child: Container(
-            child: Center(child: _animatedTextBox(strList[i], i)),
-            decoration: widget.hasUnderline
-                ? BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: borderColor,
-                      ),
-                    ),
-                  )
-                : null,
-          ),
+        child: Container(
+          child: Center(child: _animatedTextBox(strList[i], i)),
         ),
-        decoration: boxDecoration,
         width: widget.pinBoxWidth,
         height: widget.pinBoxHeight,
       ),
-    );
+    ]);
   }
 
   bool _shouldHighlight(int i) {
@@ -597,14 +591,15 @@ class PinCodeTextFieldState extends State<PinCodeTextField>
   }
 
   remove(int i) {
-    if(i <= strList.length - 1) {
-      if(strList.elementAt(i).length != 0) {
+    if (i <= strList.length - 1) {
+      if (strList.elementAt(i).length != 0) {
         var removeFromResult = widget.removeFromResult;
-        removeFromResult(i,strList.elementAt(i));
-        widget.controller.value = TextEditingValue(text:
-        widget.controller.value.text.substring(0,i) + ' ' +
-            widget.controller.value.text.substring(i+1));
-        strList.elementAt(i).replaceAll(new RegExp(r'[a-zA-Z]'),'');
+        removeFromResult(i, strList.elementAt(i));
+        widget.controller.value = TextEditingValue(
+            text: widget.controller.value.text.substring(0, i) +
+                ' ' +
+                widget.controller.value.text.substring(i + 1));
+        strList.elementAt(i).replaceAll(new RegExp(r'[a-zA-Z]'), '');
         currentIndex = i;
       }
     }
@@ -613,39 +608,42 @@ class PinCodeTextFieldState extends State<PinCodeTextField>
   Widget _animatedTextBox(String text, int i) {
     if (widget.pinTextAnimatedSwitcherTransition != null) {
       return AnimatedSwitcher(
-        duration: widget.pinTextAnimatedSwitcherDuration,
-        transitionBuilder: widget.pinTextAnimatedSwitcherTransition ??
-            (Widget child, Animation<double> animation) {
-              return child;
+          duration: widget.pinTextAnimatedSwitcherDuration,
+          transitionBuilder: widget.pinTextAnimatedSwitcherTransition ??
+              (Widget child, Animation<double> animation) {
+                return child;
+              },
+          child: TextButton(
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+            ),
+            child: Text(
+              text,
+              key: ValueKey<String>("$text$i"),
+              style: widget.pinTextStyle,
+            ),
+            onPressed: () {
+              this.remove(i);
             },
-        child: TextButton(
-          style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              alignment: Alignment.center,
-          ),
-          child:Text(
-          text,
-          key: ValueKey<String>("$text$i"),
-          style: widget.pinTextStyle,
-        ),
-        onPressed: () {
-          this.remove(i);
-        },)
-      );
+          ));
     } else {
-      return TextButton(
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.zero,
-          alignment: Alignment.center,
-        ),
-        child:Text(
+      return  TextButton(
+          style: ButtonStyle(
+              backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+              padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
+              shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+              overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
+          ),
+            child: Text(
             text,
+            textAlign: TextAlign.center,
             key: ValueKey<String>("${strList[i]}$i"),
             style: widget.pinTextStyle,
           ),
-        onPressed: () {
-          this.remove(i);
-        },
+          onPressed: () {
+            this.remove(i);
+          },
+
       );
     }
   }

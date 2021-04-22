@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:doan_hinh/api/api.dart';
 import 'package:doan_hinh/configs/routes.dart';
@@ -18,7 +19,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
-import 'package:social_share/social_share.dart';
 
 import '../../main.dart';
 import 'help_dialog.dart';
@@ -512,6 +512,13 @@ class _GameScreen extends State<GameScreen> {
     getLevelAndPoint();
   }
 
+  double percentWidth(double percent) {
+    return Constant.percentWidth(percent, context);
+  }
+
+  double percentHeight(double percent) {
+    return Constant.percentHeight(percent, context);
+  }
   back (String routes) {
     Navigator.pushReplacementNamed(context, routes);
   }
@@ -527,39 +534,153 @@ class _GameScreen extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context){
-    return Scaffold(
-
+    return DecoratedBox(
+        decoration: BoxDecoration(
+        image: DecorationImage(
+        image: AssetImage("assets/images/bg-main.png"),
+    fit: BoxFit.cover,
+    ),
+    ),
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Column(
           children: !isCorrect ? [
-            Padding(padding: EdgeInsets.all(10)),
             Row(
               children: [
-                TextButton(
-                  child: Icon(Icons.home),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.12,
+                  child:TextButton(
+                  child: Image.asset('assets/images/back-main.png',width: percentWidth(10),),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                      padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                      shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                      overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
+                  ),
                   onPressed: () => {
                     back(Routes.home)
                   },
+                )),
+                Stack(
+                    alignment : AlignmentDirectional.centerEnd,
+                    children: <Widget>[
+                      Image.asset('assets/images/Xu-main.png',width: percentWidth(18),),
+                      Center(child: Container(
+                          child: Text(adPointInt.toString(),
+                                style: TextStyle(color: Colors.white,
+                                    fontSize: 16, fontFamily: 'Chalkboard SE')),
+                          margin: EdgeInsets.fromLTRB(0, 0, 6, 0))),
+                    ]
                 ),
-                Container(width: 70,),
-                Column(
-                  children: [
-                    Text('Level'),
-                    Text(levelInt.toString())
-                  ],
-                ),
-                Container(width: 170,),
-                Column(
-                  children: [
-                    Text('Điểm'),
-                    Text(adPointInt.toString())
-                  ],
-                )
+                  Stack(
+                      alignment : AlignmentDirectional.topCenter,
+                      children: <Widget>[
+                        Image.asset('assets/images/Label-level.png',width: percentWidth(40),),
+                        Center(child: Container(
+                            child: Row(children: [
+                              Text('Level ',
+                                  style: TextStyle(color: Colors.brown.shade800,
+                                      fontSize: 22, fontFamily: 'Chalkboard SE',fontWeight: FontWeight.bold)),
+                              Text(levelInt.toString(),
+                                  style: TextStyle(color: Colors.brown.shade800,
+                                      fontSize: 40, fontFamily: 'Chalkboard SE',fontWeight: FontWeight.bold))
+                            ]),
+                            margin: EdgeInsets.fromLTRB(0, 0, 10, 0))),
+                      ]
+                  ),
+                SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.15,
+                    child:TextButton(
+                    child: Image.asset('assets/images/gift-main.png',width: percentWidth(13),),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    ),
+                  onPressed: () => {
+                    back(Routes.home)
+                  },
+                )),
+
+                SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.15,
+                    child:TextButton(
+                  child: Image.asset('assets/images/menu-main.png',width: percentWidth(10),),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  ),
+                  onPressed: () => {
+                    back(Routes.home)
+                  },
+                ))
               ]
             ),
             Container(height: 20,),
-            Text(questionTitle),
-            isLoaded? Image.network(imgPath,height: 300,) : Container(),
+
+          Stack(
+              alignment : Alignment.topRight,
+              children: <Widget>[Stack(
+                alignment : AlignmentDirectional.center,
+                children: <Widget>[
+                  Image.asset('assets/images/main-content.png',width: percentWidth(100),),
+                  isLoaded? Image.network(imgPath,width: percentWidth(81)) : Container(),
+            ]),
+                Column(
+                  children: [
+                    Image.asset('assets/images/Nhiemvu-button.png',width: percentWidth(12),),
+                    Image.asset('assets/images/ThanhTich-button.png',width: percentWidth(12),),
+                    SizedBox(
+                        width:percentWidth(12),
+                        child:TextButton(
+                          child: Image.asset('assets/images/back-main.png',width: percentWidth(10),),
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                              padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                              shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                              overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
+                          ),
+                          onPressed: () => {
+
+                            shareToFacebook(),
+                            showDialog<void>(context: context, builder: (builder){
+                              return HelpDialog(
+                                openAnswer: moDapAn ,
+                                openCharacter: moChuCai,
+                                disableWrongCharacter: boChuCai,
+
+                                openAnswerF: () {
+                                  openAnswerF();
+                                },
+                                openCharacterF: () {
+                                  openCharacterF();
+                                },
+                                disableWrongCharacterF: () {
+                                  disableWrongCharacterF();
+                                },
+                                isDisableWrongCharacter: isDisableWrongCharacter,);
+                            })
+                          },
+                        )),
+                    SizedBox(
+                        width: percentWidth(12),
+                        child:TextButton(
+                          child: Image.asset('assets/images/back-main.png',width:percentWidth(10),),
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                              padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                              shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                              overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
+                          ),
+                          onPressed: () => {
+                            shareToFacebook()
+                          },
+                        ))
+                  ]
+                ),
+
+              ]),
+            Container(height: 20,),
             PinCodeTextField(
               autofocus: false,
               controller: controller,
@@ -572,7 +693,13 @@ class _GameScreen extends State<GameScreen> {
               hasError: hasError,
               isCupertino: false,
               wrapAlignment: WrapAlignment.end,
-              pinTextStyle: TextStyle(letterSpacing: 0,wordSpacing: 0,fontSize: 15.0),
+              pinTextStyle: TextStyle(
+
+                  letterSpacing: 0,
+                  wordSpacing: 0,
+                  fontSize: length2 >= 10 ? 25.0 : 30.0,
+                  fontFamily: 'Chalkboard SE',
+                  color:hasError ? Colors.red : Colors.white),
               pinBoxBorderWidth: 0.5,
               removeFromResult: (i,text) {
                 var index = arraysBk.keys.firstWhere(
@@ -592,21 +719,26 @@ class _GameScreen extends State<GameScreen> {
             ),
             length2 > 0 ? Expanded (
               flex : 0,
-              child: SizedBox(height: 10),
+              child: SizedBox(height: 5),
             ): Container(),
             PinCodeTextField(
               autofocus: false,
               controller: controller2,
               hideCharacter: false,
               highlight: true,
-              pinBoxHeight:40,
-              pinBoxWidth: 40,
+              pinBoxHeight:length2 >= 10 ? 30 :40,
+              pinBoxWidth: length2 >= 10 ? 30 :40,
               defaultBorderColor: CupertinoColors.black,
               maxLength: length2,
               hasError: hasError,
               isCupertino: false,
               wrapAlignment: WrapAlignment.end,
-              pinTextStyle: TextStyle(letterSpacing: 0,wordSpacing: 0,fontSize: 15.0),
+              pinTextStyle: TextStyle(
+                  letterSpacing: 0,
+                  wordSpacing: 0,
+                  fontSize: length2 >= 10 ? 25.0 : 30.0,
+                  fontFamily: 'Chalkboard SE',
+                  color:hasError ? Colors.red : Colors.white),
               pinBoxBorderWidth: 0.5,
               removeFromResult: (i,text) {
                 var index = arraysBk.keys.firstWhere(
@@ -625,56 +757,33 @@ class _GameScreen extends State<GameScreen> {
               hideDefaultKeyboard: true,
             ),
             Wrap(
+              alignment: WrapAlignment.center,
               children : List.generate(dataBk.length,(int i) {
-                return TextButton(
-                  child: Text('${dataBk[i]}'),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                return Container(
+                    width: percentWidth(13),
+                    margin: EdgeInsets.fromLTRB(0,10,0,0),
+                  child: Stack(
+                      alignment : AlignmentDirectional.topCenter,
+                      children: <Widget>[
+                        dataBk[i] != ' ' ? Image.asset('assets/images/text-2.png',height: percentWidth(14),) : Container(),
+                        TextButton(
+                          child: Text('${dataBk[i]}',style: TextStyle(fontSize: 30,fontFamily: 'Chalkboard SE',color: Colors.brown.shade900, fontWeight: FontWeight.bold)),
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                              padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                              shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                              overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
+                          ),
+                          onPressed: () {
+                            this.press(i);
 
-                  ),
-                  onPressed: () {
-                    this.press(i);
-                  },
+                          },
+                        )
+                      ])
                 );
               }),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                AppButton(
-                  'Trợ giúp',
-                  icon: Icon(Icons.live_help_outlined),
-                  onPressed: () => {
-                    showDialog<void>(context: context, builder: (builder){
-                      return HelpDialog(
-                        openAnswer: moDapAn ,
-                        openCharacter: moChuCai,
-                        disableWrongCharacter: boChuCai,
 
-                        openAnswerF: () {
-                          openAnswerF();
-                        },
-                        openCharacterF: () {
-                          openCharacterF();
-                        },
-                        disableWrongCharacterF: () {
-                          disableWrongCharacterF();
-                        },
-                        isDisableWrongCharacter: isDisableWrongCharacter,);
-                    })
-                  },
-                ),
-                Container(width: 50,),
-                AppButton(
-                  'Chia sẻ',
-                  icon: Icon(Icons.reply),
-                  onPressed: () {
-                    shareToFacebook();
-                  },
-                )
-              ],),
             Expanded (
                 flex : 1,
                 child: SizedBox(height: 140),
@@ -729,7 +838,7 @@ class _GameScreen extends State<GameScreen> {
         )
         ,
       ),
-    );
+    ));
   }
 }
 
