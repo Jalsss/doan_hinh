@@ -3,18 +3,19 @@ import 'dart:core';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
-
 import 'package:doan_hinh/api/api.dart';
 import 'package:doan_hinh/configs/routes.dart';
 import 'package:doan_hinh/constant/ad_state.dart';
 import 'package:doan_hinh/constant/constant.dart';
 import 'package:doan_hinh/lib/pin_code_text_field.dart';
+import 'package:doan_hinh/screens/home/loading_screen.dart';
 import 'package:doan_hinh/storage/local_storage.dart';
 import 'package:doan_hinh/storage/process_image.dart';
 import 'package:doan_hinh/widgets/app_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ import '../../main.dart';
 import 'help_dialog.dart';
 
 final _storage = new LocalStorage();
+
 class GameScreen extends StatefulWidget {
 
   GameScreen({Key key}) : super(key: key);
@@ -33,13 +35,14 @@ class GameScreen extends StatefulWidget {
     return _GameScreen();
   }
 }
+
 class _GameScreen extends State<GameScreen> {
   BannerAd banner;
   TextEditingController controller = TextEditingController(text: "");
   TextEditingController controller2 = TextEditingController(text: "");
   String currentText = '';
   String currentText2 = '';
-  Map<int,String> arraysBk = new Map();
+  Map<int, String> arraysBk = new Map();
   bool hasError = false;
   int idx = 0;
   var appIDState;
@@ -58,12 +61,14 @@ class _GameScreen extends State<GameScreen> {
   var moChuCai = '';
   var boChuCai = '';
   var isCorrect = false;
-  var wrongCharacter ;
+  var wrongCharacter;
+
   var levelInt;
   var adPointInt;
   var pointAQuestion;
   var isDisableWrongCharacter = false;
   List<CharacterOpened> listOpened = new List();
+
   @override
   void initState() {
     super.initState();
@@ -90,21 +95,23 @@ class _GameScreen extends State<GameScreen> {
       }
     });
   }
-  getQuestion () async {
+
+  getQuestion() async {
     var appID = await _storage.readValue('appID');
     setState(() {
       appIDState = appID;
       isCorrect = false;
+      isLoaded = false;
     });
     controller.value = TextEditingValue(text: '');
     await getLevelAndPoint();
     String dataAPI = '?mID=12&appID=' + appID + '&level=' + levelInt.toString();
-    final res = await get(Constant.apiAdress + '/api/mobile/game.asmx/gameImgGet' + dataAPI);
-    if(res.statusCode == 200) {
-
+    final res = await get(
+        Constant.apiAdress + '/api/mobile/game.asmx/gameImgGet' + dataAPI);
+    if (res.statusCode == 200) {
       print(res.body);
       var resultData = [];
-      if(json.decode(res.body)['data']['iD'] != 0) {
+      if (json.decode(res.body)['data']['iD'] != 0) {
         var datajson = json.decode(res.body)['data'];
         var result = datajson['dapAnEN'].toString();
         var resultVI = datajson['dapAnVI'].toString();
@@ -133,6 +140,7 @@ class _GameScreen extends State<GameScreen> {
         var boChuCaiJson = datajson['boChuCai'].toString();
         var point = datajson['soDiem'].toString();
         var wrongCharacterJson = datajson['kyTuSai'].toString();
+        await Future.delayed(Duration(seconds: 1));
         this.setState(() {
           answer = result;
           answerVI = resultVI;
@@ -159,9 +167,10 @@ class _GameScreen extends State<GameScreen> {
     }
   }
 
-  getLevelAndPoint () async {
+  getLevelAndPoint() async {
     String dataGet = "?mID=12&appID=" + appIDState.toString();
-    final response = await get(Constant.apiAdress + '/api/mobile/game.asmx/getLevel' + dataGet);
+    final response = await get(
+        Constant.apiAdress + '/api/mobile/game.asmx/getLevel' + dataGet);
     var level = json.decode(response.body)['data']['isLevel'].toString();
     var adPoint = json.decode(response.body)['data']['adPoint'].toString();
     setState(() {
@@ -170,7 +179,7 @@ class _GameScreen extends State<GameScreen> {
     });
   }
 
-  inputFirstLine (int i) {
+  inputFirstLine(int i) {
     if (controller.value.text.length == currentText
         .replaceAll(new RegExp(r"\s+"), "")
         .length) {
@@ -178,7 +187,7 @@ class _GameScreen extends State<GameScreen> {
         currentText += '${dataBk[i]}';
       });
       arraysBk[i] = dataBk[i];
-      dataBk.replaceRange(i, i+1, [' ']);
+      dataBk.replaceRange(i, i + 1, [' ']);
       controller.value = TextEditingValue(text: currentText);
     } else {
       var text = currentText.replaceFirst(' ', '${dataBk[i]}');
@@ -186,13 +195,13 @@ class _GameScreen extends State<GameScreen> {
         currentText = text;
       });
       arraysBk[i] = dataBk[i];
-      dataBk.replaceRange(i, i+1, [' ']);
+      dataBk.replaceRange(i, i + 1, [' ']);
       controller.value = TextEditingValue(text: text);
     }
   }
 
   checkAnswer() async {
-    if(length2 == 0) {
+    if (length2 == 0) {
       if (currentText
           .replaceAll(new RegExp(r"\s+"), "")
           .length == length1) {
@@ -217,10 +226,18 @@ class _GameScreen extends State<GameScreen> {
         });
       }
     } else {
-      if(currentText.replaceAll(new RegExp(r"\s+"), "").length + currentText2.replaceAll(new RegExp(r"\s+"), "").length == length1 + length2) {
-        if(currentText + currentText2 == answer) {
-          String data = '?mID=12&appID=' + appIDState + '&isLevel='+ (int.parse(levelInt) + 1).toString() + '&adPoint=' + pointAQuestion;
-          await get(Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpLevel' + data);
+      if (currentText
+          .replaceAll(new RegExp(r"\s+"), "")
+          .length + currentText2
+          .replaceAll(new RegExp(r"\s+"), "")
+          .length == length1 + length2) {
+        if (currentText + currentText2 == answer) {
+          String data = '?mID=12&appID=' + appIDState + '&isLevel=' +
+              (int.parse(levelInt) + 1).toString() + '&adPoint=' +
+              pointAQuestion;
+          await get(
+              Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpLevel' +
+                  data);
           setState(() {
             isCorrect = true;
           });
@@ -233,8 +250,8 @@ class _GameScreen extends State<GameScreen> {
     }
   }
 
-  press (int i) async {
-    if(dataBk[i] != ' ') {
+  press(int i) async {
+    if (dataBk[i] != ' ') {
       if (length2 == 0) {
         if (currentText
             .replaceAll(new RegExp(r"\s+"), "")
@@ -282,16 +299,19 @@ class _GameScreen extends State<GameScreen> {
   }
 
   openAnswerF() async {
-    String data = '?mID=12&appID=' + appIDState + '&isLevel='+ (int.parse(levelInt) + 1).toString() + '&adPoint=0' ;
-    await get(Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpLevel' + data);
-    String dataAPI  = '?mID=12&appID=' + appIDState + '&dePoint=' + moDapAn;
-    var res = await get(Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpDePoint' + dataAPI);
-    if(res.statusCode == 200) {
+    String data = '?mID=12&appID=' + appIDState + '&isLevel=' +
+        (int.parse(levelInt) + 1).toString() + '&adPoint=0';
+    await get(
+        Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpLevel' + data);
+    String dataAPI = '?mID=12&appID=' + appIDState + '&dePoint=' + moDapAn;
+    var res = await get(
+        Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpDePoint' +
+            dataAPI);
+    if (res.statusCode == 200) {
       setState(() {
         adPointInt = 0;
         isCorrect = true;
       });
-
     }
   }
 
@@ -299,40 +319,40 @@ class _GameScreen extends State<GameScreen> {
     if (controller.value.text.length == currentText
         .replaceAll(new RegExp(r"\s+"), "")
         .length) {
-
-      var index = controller.value.text.length  + Random().nextInt(answer.length - controller.value.text.length);
+      var index = controller.value.text.length +
+          Random().nextInt(answer.length - controller.value.text.length);
       String character = answer[index];
       var i = 0;
-      for(int j = 0 ; j< dataBk.length ; j ++) {
-        if(dataBk[j] == character) {
+      for (int j = 0; j < dataBk.length; j ++) {
+        if (dataBk[j] == character) {
           i = j;
           break;
         }
       }
-      CharacterOpened characterOpened = new CharacterOpened(index,i, dataBk[i]);
+      CharacterOpened characterOpened = new CharacterOpened(
+          index, i, dataBk[i]);
       listOpened.add(characterOpened);
       addBackupCharacter(i);
-
-
     } else {
       var dataSpace = [];
-      for(int i = 0; i< currentText.length; i ++) {
+      for (int i = 0; i < currentText.length; i ++) {
         List<CharacterOpened> check = [];
         check = listOpened.where((element) => element.indexText == i).toList();
-        if(check.length == 0) {
+        if (check.length == 0) {
           dataSpace.add(i);
         }
       }
       var rand = Random().nextInt(dataSpace.length);
       var character = answer[dataSpace[rand]];
       var i = 0;
-      for(int j = 0 ; j< dataBk.length ; j ++) {
-        if(dataBk[j] == character) {
+      for (int j = 0; j < dataBk.length; j ++) {
+        if (dataBk[j] == character) {
           i = j;
           break;
         }
       }
-      CharacterOpened characterOpened = new CharacterOpened(dataSpace[rand],i, dataBk[i]);
+      CharacterOpened characterOpened = new CharacterOpened(
+          dataSpace[rand], i, dataBk[i]);
       listOpened.add(characterOpened);
       addBackupCharacter(i);
     }
@@ -340,13 +360,15 @@ class _GameScreen extends State<GameScreen> {
 
   addBackupCharacter(int indexArrays) {
     var text = '';
-    for(int i = 0; i< length1 ; i++) {
+    for (int i = 0; i < length1; i++) {
       List<CharacterOpened> check = [];
       check = listOpened.where((element) => element.indexText == i).toList();
-      if(check.length == 0) {
+      if (check.length == 0) {
         text += ' ';
       } else {
-        text += check.elementAt(0).character;
+        text += check
+            .elementAt(0)
+            .character;
       }
     }
 
@@ -355,7 +377,7 @@ class _GameScreen extends State<GameScreen> {
     });
 
     arraysBk[indexArrays] = dataBk[indexArrays];
-    dataBk.replaceRange(indexArrays, indexArrays+1, [' ']);
+    dataBk.replaceRange(indexArrays, indexArrays + 1, [' ']);
 
     controller.value = TextEditingValue(text: text);
     checkAnswer();
@@ -364,22 +386,27 @@ class _GameScreen extends State<GameScreen> {
   addBackupCharacterTwoLines(int indexArrays) {
     var text1 = '';
     var text2 = '';
-    for(int i = 0; i< length1 ; i++) {
+    for (int i = 0; i < length1; i++) {
       List<CharacterOpened> check = [];
       check = listOpened.where((element) => element.indexText == i).toList();
-      if(check.length == 0) {
+      if (check.length == 0) {
         text1 += ' ';
       } else {
-        text1 += check.elementAt(0).character;
+        text1 += check
+            .elementAt(0)
+            .character;
       }
     }
-    for(int i = 0; i< length2 ; i++) {
+    for (int i = 0; i < length2; i++) {
       List<CharacterOpened> check = [];
-      check = listOpened.where((element) => element.indexText - length1  == i).toList();
-      if(check.length == 0) {
+      check = listOpened.where((element) => element.indexText - length1 == i)
+          .toList();
+      if (check.length == 0) {
         text2 += ' ';
       } else {
-        text2 += check.elementAt(0).character;
+        text2 += check
+            .elementAt(0)
+            .character;
       }
     }
     setState(() {
@@ -388,7 +415,7 @@ class _GameScreen extends State<GameScreen> {
     });
 
     arraysBk[indexArrays] = dataBk[indexArrays];
-    dataBk.replaceRange(indexArrays, indexArrays+1, [' ']);
+    dataBk.replaceRange(indexArrays, indexArrays + 1, [' ']);
 
     controller.value = TextEditingValue(text: text1);
     controller2.value = TextEditingValue(text: text2);
@@ -402,54 +429,61 @@ class _GameScreen extends State<GameScreen> {
             .length + currentText2
             .replaceAll(new RegExp(r"\s+"), "")
             .length) {
-      var index = controller.value.text.length + controller2.value.text.length  + Random().nextInt(answer.length - controller.value.text.length - controller2.value.text.length);
+      var index = controller.value.text.length + controller2.value.text.length +
+          Random().nextInt(answer.length - controller.value.text.length -
+              controller2.value.text.length);
       String character = answer[index];
       var i = 0;
-      for(int j = 0 ; j< dataBk.length ; j ++) {
-        if(dataBk[j] == character) {
+      for (int j = 0; j < dataBk.length; j ++) {
+        if (dataBk[j] == character) {
           i = j;
           break;
         }
       }
 
-      CharacterOpened characterOpened = new CharacterOpened(index,i, dataBk[i]);
+      CharacterOpened characterOpened = new CharacterOpened(
+          index, i, dataBk[i]);
       listOpened.add(characterOpened);
       addBackupCharacterTwoLines(i);
     } else {
       var dataSpace = [];
-      for(int i = 0; i< currentText.length; i ++) {
+      for (int i = 0; i < currentText.length; i ++) {
         List<CharacterOpened> check = [];
         check = listOpened.where((element) => element.indexText == i).toList();
-        if(check.length == 0) {
+        if (check.length == 0) {
           dataSpace.add(i);
         }
       }
-      for(int i = 0; i< currentText2.length; i ++) {
-          List<CharacterOpened> check = [];
-          check = listOpened.where((element) => element.indexText == i + length1 ).toList();
-        if(check.length == 0) {
+      for (int i = 0; i < currentText2.length; i ++) {
+        List<CharacterOpened> check = [];
+        check = listOpened.where((element) => element.indexText == i + length1)
+            .toList();
+        if (check.length == 0) {
           dataSpace.add(i + length1);
         }
       }
       var rand = Random().nextInt(dataSpace.length);
       var character = answer[dataSpace[rand]];
       var i = 0;
-      for(int j = 0 ; j< dataBk.length ; j ++) {
-        if(dataBk[j] == character) {
+      for (int j = 0; j < dataBk.length; j ++) {
+        if (dataBk[j] == character) {
           i = j;
           break;
         }
       }
-      CharacterOpened characterOpened = new CharacterOpened(dataSpace[rand],i, dataBk[i]);
+      CharacterOpened characterOpened = new CharacterOpened(
+          dataSpace[rand], i, dataBk[i]);
       listOpened.add(characterOpened);
       addBackupCharacterTwoLines(i);
     }
   }
 
   openCharacterF() async {
-    String dataAPI  = '?mID=12&appID=' + appIDState + '&dePoint=' + moChuCai;
-    var res = await get(Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpDePoint' + dataAPI);
-    if(res.statusCode == 200) {
+    String dataAPI = '?mID=12&appID=' + appIDState + '&dePoint=' + moChuCai;
+    var res = await get(
+        Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpDePoint' +
+            dataAPI);
+    if (res.statusCode == 200) {
       controller.value = TextEditingValue(text: '');
       controller2.value = TextEditingValue(text: '');
       var databk = [];
@@ -485,13 +519,14 @@ class _GameScreen extends State<GameScreen> {
         }
       }
     }
-
   }
 
   disableWrongCharacterF() async {
-    String dataAPI  = '?mID=12&appID=' + appIDState + '&dePoint=' + boChuCai;
-    var res = await get(Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpDePoint' + dataAPI);
-    if(res.statusCode == 200) {
+    String dataAPI = '?mID=12&appID=' + appIDState + '&dePoint=' + boChuCai;
+    var res = await get(
+        Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpDePoint' +
+            dataAPI);
+    if (res.statusCode == 200) {
       var data = dataBk;
       var arrays = localData;
       for (int i = 0; i < wrongCharacter.length; i++) {
@@ -519,8 +554,9 @@ class _GameScreen extends State<GameScreen> {
   double percentHeight(double percent) {
     return Constant.percentHeight(percent, context);
   }
-  back (String routes) {
-    Navigator.pushReplacementNamed(context, routes);
+
+  back(String routes) async {
+    await Navigator.pushReplacementNamed(context, routes);
   }
 
   shareToFacebook() async {
@@ -528,324 +564,593 @@ class _GameScreen extends State<GameScreen> {
 
     final text = 'Mọi người giúp mình với';
     final RenderBox box = context.findRenderObject();
-    Share.shareFiles([path],subject : text,text: text,
+    Share.shareFiles([path], subject: text, text: text,
         sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
   }
 
   @override
-  Widget build(BuildContext context){
-    return DecoratedBox(
-        decoration: BoxDecoration(
+  Widget build(BuildContext context) {
+    return isLoaded ? DecoratedBox(
+      decoration: BoxDecoration(
         image: DecorationImage(
-        image: AssetImage("assets/images/bg-main.png"),
-    fit: BoxFit.cover,
-    ),
-    ),
-    child: Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: Column(
-          children: !isCorrect ? [
-            Row(
-              children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.12,
-                  child:TextButton(
-                  child: Image.asset('assets/images/back-main.png',width: percentWidth(10),),
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                      padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                      shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                      overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
-                  ),
-                  onPressed: () => {
-                    back(Routes.home)
-                  },
-                )),
-                Stack(
-                    alignment : AlignmentDirectional.centerEnd,
-                    children: <Widget>[
-                      Image.asset('assets/images/Xu-main.png',width: percentWidth(18),),
-                      Center(child: Container(
-                          child: Text(adPointInt.toString(),
-                                style: TextStyle(color: Colors.white,
-                                    fontSize: 16, fontFamily: 'Chalkboard SE')),
-                          margin: EdgeInsets.fromLTRB(0, 0, 6, 0))),
-                    ]
-                ),
-                  Stack(
-                      alignment : AlignmentDirectional.topCenter,
-                      children: <Widget>[
-                        Image.asset('assets/images/Label-level.png',width: percentWidth(40),),
-                        Center(child: Container(
-                            child: Row(children: [
-                              Text('Level ',
-                                  style: TextStyle(color: Colors.brown.shade800,
-                                      fontSize: 22, fontFamily: 'Chalkboard SE',fontWeight: FontWeight.bold)),
-                              Text(levelInt.toString(),
-                                  style: TextStyle(color: Colors.brown.shade800,
-                                      fontSize: 40, fontFamily: 'Chalkboard SE',fontWeight: FontWeight.bold))
-                            ]),
-                            margin: EdgeInsets.fromLTRB(0, 0, 10, 0))),
-                      ]
-                  ),
-                SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.15,
-                    child:TextButton(
-                    child: Image.asset('assets/images/gift-main.png',width: percentWidth(13),),
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    ),
-                  onPressed: () => {
-                    back(Routes.home)
-                  },
-                )),
-
-                SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.15,
-                    child:TextButton(
-                  child: Image.asset('assets/images/menu-main.png',width: percentWidth(10),),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  ),
-                  onPressed: () => {
-                    back(Routes.home)
-                  },
-                ))
-              ]
-            ),
-            Container(height: 20,),
-
-          Stack(
-              alignment : Alignment.topRight,
-              children: <Widget>[Stack(
-                alignment : AlignmentDirectional.center,
-                children: <Widget>[
-                  Image.asset('assets/images/main-content.png',width: percentWidth(100),),
-                  isLoaded? Image.network(imgPath,width: percentWidth(81)) : Container(),
-            ]),
-                Column(
+          image: AssetImage("assets/images/bg-main.png"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: !isCorrect ? Column(
+            children: [
+              Row(
                   children: [
-                    Image.asset('assets/images/Nhiemvu-button.png',width: percentWidth(12),),
-                    Image.asset('assets/images/ThanhTich-button.png',width: percentWidth(12),),
                     SizedBox(
-                        width:percentWidth(12),
-                        child:TextButton(
-                          child: Image.asset('assets/images/back-main.png',width: percentWidth(10),),
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.12,
+                        child: TextButton(
+                          child: Image.asset('assets/images/back-main.png',
+                            width: percentWidth(10),),
                           style: ButtonStyle(
-                              backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                              padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                              shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                              overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
+                              backgroundColor: MaterialStateColor
+                                  .resolveWith((states) =>
+                              Colors.transparent),
+                              padding: MaterialStateProperty.resolveWith((
+                                  states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                              shadowColor: MaterialStateColor.resolveWith((
+                                  states) => Colors.transparent),
+                              overlayColor: MaterialStateColor.resolveWith((
+                                  states) => Colors.transparent)
                           ),
-                          onPressed: () => {
-
-                            shareToFacebook(),
-                            showDialog<void>(context: context, builder: (builder){
-                              return HelpDialog(
-                                openAnswer: moDapAn ,
-                                openCharacter: moChuCai,
-                                disableWrongCharacter: boChuCai,
-
-                                openAnswerF: () {
-                                  openAnswerF();
-                                },
-                                openCharacterF: () {
-                                  openCharacterF();
-                                },
-                                disableWrongCharacterF: () {
-                                  disableWrongCharacterF();
-                                },
-                                isDisableWrongCharacter: isDisableWrongCharacter,);
-                            })
+                          onPressed: () =>
+                          {
+                            back(Routes.home)
                           },
                         )),
+                    Stack(
+                        alignment: AlignmentDirectional.centerEnd,
+                        children: <Widget>[
+                          Image.asset('assets/images/Xu-main.png',
+                            width: percentWidth(18),),
+                          Center(child: Container(
+                              child: Text(adPointInt.toString(),
+                                  style: TextStyle(color: Colors.white,
+                                      fontSize: percentWidth(4),
+                                      fontFamily: 'Chalkboard SE')),
+                              margin: EdgeInsets.fromLTRB(0, 0, 6, 0))),
+                        ]
+                    ),
+                    Stack(
+                        alignment: AlignmentDirectional.topCenter,
+                        children: <Widget>[
+                          Image.asset('assets/images/Label-level.png',
+                            width: percentWidth(40),),
+                          Center(child: Container(
+                              child: Row(children: [
+                                Text('Level ',
+                                    style: TextStyle(
+                                        color: Colors.brown.shade800,
+                                        fontSize: percentWidth(6),
+                                        fontFamily: 'Chalkboard SE',
+                                        fontWeight: FontWeight.bold)),
+                                Text(levelInt.toString(),
+                                    style: TextStyle(
+                                        color: Colors.brown.shade800,
+                                        fontSize: percentWidth(8),
+                                        fontFamily: 'Chalkboard SE',
+                                        fontWeight: FontWeight.bold))
+                              ]),
+                              margin: EdgeInsets.fromLTRB(0, 0, 10, 0))),
+                        ]
+                    ),
                     SizedBox(
-                        width: percentWidth(12),
-                        child:TextButton(
-                          child: Image.asset('assets/images/back-main.png',width:percentWidth(10),),
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                              padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                              shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                              overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.15,
+                        child: TextButton(
+                          child: Image.asset('assets/images/gift-main.png',
+                            width: percentWidth(13),),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                           ),
-                          onPressed: () => {
-                            shareToFacebook()
+                          onPressed: () =>
+                          {
+                            back(Routes.home)
+                          },
+                        )),
+
+                    SizedBox(
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.15,
+                        child: TextButton(
+                          child: Image.asset('assets/images/menu-main.png',
+                            width: percentWidth(10),),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          ),
+                          onPressed: () =>
+                          {
+                            back(Routes.home)
                           },
                         ))
                   ]
-                ),
-
-              ]),
-            Container(height: 20,),
-            PinCodeTextField(
-              autofocus: false,
-              controller: controller,
-              hideCharacter: false,
-              highlight: true,
-              pinBoxHeight: length1 >= 10 ? 30 :40,
-              pinBoxWidth: length1 >= 10 ? 30 :40,
-              defaultBorderColor: CupertinoColors.black,
-              maxLength: length1,
-              hasError: hasError,
-              isCupertino: false,
-              wrapAlignment: WrapAlignment.end,
-              pinTextStyle: TextStyle(
-
-                  letterSpacing: 0,
-                  wordSpacing: 0,
-                  fontSize: length2 >= 10 ? 25.0 : 30.0,
-                  fontFamily: 'Chalkboard SE',
-                  color:hasError ? Colors.red : Colors.white),
-              pinBoxBorderWidth: 0.5,
-              removeFromResult: (i,text) {
-                var index = arraysBk.keys.firstWhere(
-                        (k) => arraysBk[k] == text, orElse: () => null);
-                if(index != null) {
-                  setState(() {
-                    dataBk.replaceRange(index, index+1, [text]);
-                    arraysBk.remove(index);
-                  });
-                }
-                setState(() {
-                  currentText = currentText.replaceRange(i, i+1, ' ');
-                  hasError = false;
-                });
-              },
-              hideDefaultKeyboard: true,
-            ),
-            length2 > 0 ? Expanded (
-              flex : 0,
-              child: SizedBox(height: 5),
-            ): Container(),
-            PinCodeTextField(
-              autofocus: false,
-              controller: controller2,
-              hideCharacter: false,
-              highlight: true,
-              pinBoxHeight:length2 >= 10 ? 30 :40,
-              pinBoxWidth: length2 >= 10 ? 30 :40,
-              defaultBorderColor: CupertinoColors.black,
-              maxLength: length2,
-              hasError: hasError,
-              isCupertino: false,
-              wrapAlignment: WrapAlignment.end,
-              pinTextStyle: TextStyle(
-                  letterSpacing: 0,
-                  wordSpacing: 0,
-                  fontSize: length2 >= 10 ? 25.0 : 30.0,
-                  fontFamily: 'Chalkboard SE',
-                  color:hasError ? Colors.red : Colors.white),
-              pinBoxBorderWidth: 0.5,
-              removeFromResult: (i,text) {
-                var index = arraysBk.keys.firstWhere(
-                        (k) => arraysBk[k] == text, orElse: () => null);
-                if(index != null) {
-                  setState(() {
-                    dataBk.replaceRange(index, index+1, [text]);
-                    arraysBk.remove(index);
-                  });
-                }
-                setState(() {
-                  currentText2 = currentText2.replaceRange(i, i+1, ' ');
-                  hasError = false;
-                });
-              },
-              hideDefaultKeyboard: true,
-            ),
-            Wrap(
-              alignment: WrapAlignment.center,
-              children : List.generate(dataBk.length,(int i) {
-                return Container(
-                    width: percentWidth(13),
-                    margin: EdgeInsets.fromLTRB(0,10,0,0),
-                  child: Stack(
-                      alignment : AlignmentDirectional.topCenter,
-                      children: <Widget>[
-                        dataBk[i] != ' ' ? Image.asset('assets/images/text-2.png',height: percentWidth(14),) : Container(),
-                        TextButton(
-                          child: Text('${dataBk[i]}',style: TextStyle(fontSize: 30,fontFamily: 'Chalkboard SE',color: Colors.brown.shade900, fontWeight: FontWeight.bold)),
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                              padding: MaterialStateProperty.resolveWith((states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                              shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                              overlayColor: MaterialStateColor.resolveWith((states) => Colors.transparent)
-                          ),
-                          onPressed: () {
-                            this.press(i);
-
-                          },
-                        )
-                      ])
-                );
-              }),
-            ),
-
-            Expanded (
-                flex : 1,
-                child: SizedBox(height: 140),
               ),
-                if (banner == null)
-                  SizedBox(height: 50)
-                else
-                  Container(
-                    height: 50,
-                    child: AdWidget(ad: banner),
-                  )
-          ] : [
-            Padding(padding: EdgeInsets.all(10)),
-            Row(),
-            Text(questionTitle),
-            isLoaded? Image.network(imgPath,height: 300,) : Container(),
-            Text(answerVI),
-            Text("+ " + pointAQuestion + " điểm"),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                AppButton(
-                  'Tiếp tục',
-                  icon: Icon(Icons.ac_unit),
-                  onPressed: () {
-                    this.getQuestion();
-                  },
-                ),
-                Container(width: 50,),
-                AppButton(
-                  'Chia sẻ',
-                  icon: Icon(Icons.ac_unit),
-                  onPressed: () {
-                    shareToFacebook();
-                  },
-                )
-              ],),
-                Expanded (
-                  flex : 1,
-                  child: SizedBox(height: 140),
-                ),
-                if (banner == null)
-                  SizedBox(height: 50)
-                else
-                  Container(
-                    height: 50,
-                    child: AdWidget(ad: banner),
-                  )
+              Container(height: percentHeight(0.2),),
 
-          ],
-        )
-        ,
+              Stack(
+                  alignment: Alignment.topRight,
+                  children: <Widget>[
+                    Stack(
+                        alignment: AlignmentDirectional.center,
+                        children: <Widget>[
+                          Image.asset('assets/images/main-content.png',
+                              width: percentWidth(100),
+                              height: percentHeight(36),
+                              fit: BoxFit.fill),
+                          isLoaded ? Image.network(
+                              imgPath, width: percentWidth(81),
+                              height: percentHeight(29),
+                              fit: BoxFit.fill) : Container(),
+                        ]),
+                    Column(
+                        children: [
+                          Image.asset('assets/images/Nhiemvu-button.png',
+                            width: percentWidth(12),),
+                          Image.asset('assets/images/ThanhTich-button.png',
+                            width: percentWidth(12),),
+                          SizedBox(
+                              width: percentWidth(12),
+                              child: TextButton(
+                                child: Image.asset(
+                                    'assets/images/question.png',
+                                    width: percentWidth(11)),
+                                style: ButtonStyle(
+                                    backgroundColor: MaterialStateColor
+                                        .resolveWith((states) =>
+                                    Colors.transparent),
+                                    padding: MaterialStateProperty
+                                        .resolveWith((states) =>
+                                        EdgeInsets.fromLTRB(0, 0, 4, 0)),
+                                    shadowColor: MaterialStateColor
+                                        .resolveWith((states) =>
+                                    Colors.transparent),
+                                    overlayColor: MaterialStateColor
+                                        .resolveWith((states) =>
+                                    Colors.transparent)
+                                ),
+                                onPressed: () =>
+                                {
+
+                                  showDialog<void>(
+                                      context: context, builder: (builder) {
+                                    return HelpDialog(
+                                      openAnswer: moDapAn,
+                                      openCharacter: moChuCai,
+                                      disableWrongCharacter: boChuCai,
+
+                                      openAnswerF: () {
+                                        openAnswerF();
+                                      },
+                                      openCharacterF: () {
+                                        openCharacterF();
+                                      },
+                                      disableWrongCharacterF: () {
+                                        disableWrongCharacterF();
+                                      },
+                                      isDisableWrongCharacter: isDisableWrongCharacter,
+                                      shareOnFaceBook: () {
+                                        shareToFacebook();
+                                      },);
+                                  })
+                                },
+                              )),
+                          // SizedBox(
+                          //     width: percentWidth(12),
+                          //     child: TextButton(
+                          //       child: Image.asset(
+                          //         'assets/images/back-main.png',
+                          //         width: percentWidth(10),),
+                          //       style: ButtonStyle(
+                          //           backgroundColor: MaterialStateColor
+                          //               .resolveWith((states) =>
+                          //           Colors.transparent),
+                          //           padding: MaterialStateProperty
+                          //               .resolveWith((states) =>
+                          //               EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                          //           shadowColor: MaterialStateColor
+                          //               .resolveWith((states) =>
+                          //           Colors.transparent),
+                          //           overlayColor: MaterialStateColor
+                          //               .resolveWith((states) =>
+                          //           Colors.transparent)
+                          //       ),
+                          //       onPressed: () =>
+                          //       {
+                          //         shareToFacebook()
+                          //       },
+                          //     ))
+                        ]
+                    ),
+
+                  ]),
+              Container(height: percentHeight(0.5),),
+              PinCodeTextField(
+                autofocus: false,
+                controller: controller,
+                hideCharacter: false,
+                highlight: true,
+                pinBoxHeight: length1 >= 10 ? 25 : 40,
+                pinBoxWidth: length1 >= 10 ? 25 : 40,
+                defaultBorderColor: CupertinoColors.black,
+                maxLength: length1,
+                hasError: hasError,
+                isCupertino: false,
+                wrapAlignment: WrapAlignment.end,
+                pinTextStyle: TextStyle(
+
+                    letterSpacing: 0,
+                    wordSpacing: 0,
+                    fontSize: length1 >= 10 ? 22.0 : 30.0,
+                    fontFamily: 'Chalkboard SE',
+                    color: hasError ? Colors.red : Colors.white),
+                pinBoxBorderWidth: 0.5,
+                removeFromResult: (i, text) {
+                  var index = arraysBk.keys.firstWhere(
+                          (k) => arraysBk[k] == text, orElse: () => null);
+                  if (index != null) {
+                    setState(() {
+                      dataBk.replaceRange(index, index + 1, [text]);
+                      arraysBk.remove(index);
+                    });
+                  }
+                  setState(() {
+                    currentText = currentText.replaceRange(i, i + 1, ' ');
+                    hasError = false;
+                  });
+                },
+                hideDefaultKeyboard: true,
+              ),
+              // length2 > 0 ? Expanded(
+              //   flex: 0,
+              //   child: SizedBox(height: 5),
+              // ) : Container(height: 5,),
+              length2 > 0 ? PinCodeTextField(
+                autofocus: false,
+                controller: controller2,
+                hideCharacter: false,
+                highlight: true,
+                pinBoxHeight: length2 >= 10 ? 30 : 40,
+                pinBoxWidth: length2 >= 10 ? 30 : 40,
+                defaultBorderColor: CupertinoColors.black,
+                maxLength: length2,
+                hasError: hasError,
+                isCupertino: false,
+                wrapAlignment: WrapAlignment.end,
+                pinTextStyle: TextStyle(
+                    letterSpacing: 0,
+                    wordSpacing: 0,
+                    fontSize: length2 >= 10 ? 22.0 : 30.0,
+                    fontFamily: 'Chalkboard SE',
+                    color: hasError ? Colors.red : Colors.white),
+                pinBoxBorderWidth: 0.5,
+                removeFromResult: (i, text) {
+                  var index = arraysBk.keys.firstWhere(
+                          (k) => arraysBk[k] == text, orElse: () => null);
+                  if (index != null) {
+                    setState(() {
+                      dataBk.replaceRange(index, index + 1, [text]);
+                      arraysBk.remove(index);
+                    });
+                  }
+                  setState(() {
+                    currentText2 = currentText2.replaceRange(i, i + 1, ' ');
+                    hasError = false;
+                  });
+                },
+                hideDefaultKeyboard: true,
+              ) : Container(height: percentHeight(10),),
+              Wrap(
+                alignment: WrapAlignment.center,
+                children: List.generate(dataBk.length, (int i) {
+                  return Container(
+                      width: percentWidth(11),
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                      child: Stack(
+                          alignment: AlignmentDirectional.topCenter,
+                          children: <Widget>[
+                            dataBk[i] != ' ' ? Image.asset(
+                              'assets/images/text-2.png',
+                              height: percentWidth(14),) : Container(),
+                            TextButton(
+                              child: Text('${dataBk[i]}', style: TextStyle(
+                                  fontSize: percentWidth(7),
+                                  fontFamily: 'Chalkboard SE',
+                                  color: Colors.brown.shade900,
+                                  fontWeight: FontWeight.bold)),
+                              style: ButtonStyle(
+                                  backgroundColor: MaterialStateColor
+                                      .resolveWith((states) =>
+                                  Colors.transparent),
+                                  padding: MaterialStateProperty.resolveWith((
+                                      states) =>
+                                      EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                                  shadowColor: MaterialStateColor
+                                      .resolveWith((states) =>
+                                  Colors.transparent),
+                                  overlayColor: MaterialStateColor
+                                      .resolveWith((states) =>
+                                  Colors.transparent)
+                              ),
+                              onPressed: () {
+                                this.press(i);
+                              },
+                            )
+                          ])
+                  );
+                }),
+              ),
+
+              Expanded(
+                flex: 1,
+                child: SizedBox(height: percentHeight(9)),
+              ),
+              if (banner == null)
+                SizedBox(height: 50)
+              else
+                Container(
+                  height: percentHeight(6),
+                  child: AdWidget(ad: banner),
+                )
+            ],
+          ) :
+          Column(
+            children: [
+              Row(
+                  children: [
+                    SizedBox(
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.12,
+                        child: TextButton(
+                          child: Image.asset('assets/images/back-main.png',
+                            width: percentWidth(10),),
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateColor
+                                  .resolveWith((states) =>
+                              Colors.transparent),
+                              padding: MaterialStateProperty.resolveWith((
+                                  states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                              shadowColor: MaterialStateColor.resolveWith((
+                                  states) => Colors.transparent),
+                              overlayColor: MaterialStateColor.resolveWith((
+                                  states) => Colors.transparent)
+                          ),
+                          onPressed: () =>
+                          {
+                            back(Routes.home)
+                          },
+                        )),
+                    Stack(
+                        alignment: AlignmentDirectional.centerEnd,
+                        children: <Widget>[
+                          Image.asset('assets/images/Xu-main.png',
+                            width: percentWidth(18),),
+                          Center(child: Container(
+                              child: Text(adPointInt.toString(),
+                                  style: TextStyle(color: Colors.white,
+                                      fontSize:  percentWidth(4),
+                                      fontFamily: 'Chalkboard SE')),
+                              margin: EdgeInsets.fromLTRB(0, 0, 6, 0))),
+                        ]
+                    ),
+                    Stack(
+                        alignment: AlignmentDirectional.topCenter,
+                        children: <Widget>[
+                          Image.asset('assets/images/Label-level.png',
+                            width: percentWidth(40),),
+                          Center(child: Container(
+                              child: Row(children: [
+                                Text('Level ',
+                                    style: TextStyle(
+                                        color: Colors.brown.shade800,
+                                        fontSize: percentWidth(6),
+                                        fontFamily: 'Chalkboard SE',
+                                        fontWeight: FontWeight.bold)),
+                                Text(levelInt.toString(),
+                                    style: TextStyle(
+                                        color: Colors.brown.shade800,
+                                        fontSize: percentWidth(8),
+                                        fontFamily: 'Chalkboard SE',
+                                        fontWeight: FontWeight.bold))
+                              ]),
+                              margin: EdgeInsets.fromLTRB(0, 0, 10, 0))),
+                        ]
+                    ),
+                    SizedBox(
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.15,
+                        child: TextButton(
+                          child: Image.asset('assets/images/gift-main.png',
+                            width: percentWidth(13),),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          ),
+                          onPressed: () =>
+                          {
+                            back(Routes.home)
+                          },
+                        )),
+
+                    SizedBox(
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.15,
+                        child: TextButton(
+                          child: Image.asset('assets/images/menu-main.png',
+                            width: percentWidth(10),),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          ),
+                          onPressed: () =>
+                          {
+                            back(Routes.home)
+                          },
+                        ))
+                  ]
+              ),
+              //Text(questionTitle),
+              Stack(
+                  alignment: AlignmentDirectional.center,
+                  children: <Widget>[
+                    Image.asset('assets/images/main-content.png',
+                        width: percentWidth(100),
+                        height: percentHeight(36),
+                        fit: BoxFit.fill),
+                    isLoaded ? Image.network(imgPath, width: percentWidth(81),
+                        height: percentHeight(29),
+                        fit: BoxFit.fill) : Container(),
+                  ]),
+              Container(
+                height: 50,
+              ),
+              Text(answerVI, style: TextStyle(fontFamily: 'Chalkboard SE',
+                  fontSize: percentWidth(7),
+                  color: Colors.brown.shade800),),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("+ " + pointAQuestion + ' ',
+                      style: TextStyle(
+                          color: Colors.brown.shade800,
+                          fontSize: percentWidth(7),
+                          fontFamily:
+                          'Chalkboard SE')),
+                  Image.asset(
+                    'assets/images/coin-popup.png',
+                    width:
+                    MediaQuery.of(context)
+                        .size
+                        .width *
+                        0.1,
+                  )
+                ],
+              ),
+              Container(
+                height: 50,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+
+                  SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.21,
+                      child: TextButton(
+                        child: Stack(
+                            alignment:
+                            AlignmentDirectional.centerStart,
+                            children: <Widget>[
+                              Image.asset(
+                                'assets/images/nut.png',
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width *
+                                    0.35,
+                              ),
+                              Center(
+                                  child: Container(
+                                      child:
+                                      Text('Tiếp tục',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 19,
+                                              fontFamily:
+                                              'Chalkboard SE')),
+                                      margin: EdgeInsets.fromLTRB(
+                                          6, 0, 6, 0))),
+                            ]),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        ),
+                        onPressed: () => {
+                          this.getQuestion()
+                        },
+                      )),
+                  SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.21,
+                      child: TextButton(
+                        child: Stack(
+                            alignment:
+                            AlignmentDirectional.centerStart,
+                            children: <Widget>[
+                              Image.asset(
+                                'assets/images/nut.png',
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width *
+                                    0.30,
+                              ),
+                              Center(
+                                  child: Container(
+                                      child:
+                                      Text('Chia sẻ',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 19,
+                                              fontFamily:
+                                              'Chalkboard SE')),
+                                      margin: EdgeInsets.fromLTRB(
+                                          6, 0, 6, 0))),
+                            ]),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        ),
+                        onPressed: () => {
+                          shareToFacebook()
+                        },
+                      ))
+                ],),
+              Expanded(
+                flex: 1,
+                child: SizedBox(height: percentHeight(9)),
+              ),
+              if (banner == null)
+                SizedBox(height: 50)
+              else
+                Container(
+                  height: percentHeight(6),
+                  child: AdWidget(ad: banner),
+                )
+
+            ],
+          )
+
+          ,
+        ),
       ),
-    ));
+    ) : LoadingScreen();
   }
 }
+
 
 class CharacterOpened {
   int indexText;
   int indexArray;
   String character;
 
-  CharacterOpened(this.indexText,this.indexArray,this.character);
+  CharacterOpened(this.indexText, this.indexArray, this.character);
 }

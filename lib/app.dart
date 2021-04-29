@@ -1,4 +1,5 @@
 import 'package:doan_hinh/screens/home/home.dart';
+import 'package:doan_hinh/screens/home/loading_screen.dart';
 import 'package:doan_hinh/screens/signin/signin.dart';
 import 'package:doan_hinh/storage/local_storage.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ class _AppState extends State<App> {
   final route = Routes();
 
   var isSignIn;
+  var loading = false;
   @override
   void initState() {
     super.initState();
@@ -23,17 +25,20 @@ class _AppState extends State<App> {
 
   getSign() async {
     isSignIn = await _storage.readValue('isSignIn');
+    setState(() {
+      loading = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: Future.delayed(Duration(seconds: 0)),
+    return  FutureBuilder(
+        future: Future.delayed(Duration(seconds: 5)),
         builder: (context, snapshot) {
           if(isSignIn == null) {
             return MaterialApp(
                 onGenerateRoute: route.generateRoute,
-                home : SignIn());
+                home :  SignIn() );
           } else {
                 return MaterialApp(
                 onGenerateRoute: route.generateRoute,

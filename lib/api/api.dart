@@ -1,7 +1,5 @@
 import 'package:connectivity/connectivity.dart';
-import 'package:doan_hinh/constant/constant.dart';
 import 'package:doan_hinh/notification/notification.config.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 
@@ -19,7 +17,7 @@ class Api {
 
   static final Api _instance = Api._internal();
 
-   static Future<Response> apiGet(String port, String url, String params) async {
+   static void apiGet(String port, String url, String params) async {
     check().then((intenet) async {
       if (intenet != null && intenet) {
         final response = await get(port + url + params);

@@ -1,12 +1,9 @@
-import 'dart:convert';
 
 import 'package:doan_hinh/configs/routes.dart';
 import 'package:doan_hinh/constant/constant.dart';
-import 'package:doan_hinh/screens/gamesScreen/game_screen.dart';
 import 'package:doan_hinh/storage/local_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:doan_hinh/widgets/app_button.dart';
 import 'package:http/http.dart';
 
 final _storage = new LocalStorage();
@@ -15,15 +12,15 @@ class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
 
   @override
-  _HomeState createState() {
-    return _HomeState();
+  _HomeScreen createState() {
+    return _HomeScreen();
   }
 }
 
-class _HomeState extends State<Home> {
+class _HomeScreen extends State<Home> {
   bool isLoading = false;
 
-  _HomeState();
+  _HomeScreen();
 
   @override
   void initState() {
@@ -57,16 +54,22 @@ class _HomeState extends State<Home> {
         ),
         child: Scaffold(
             backgroundColor: Colors.transparent,
-            body: SafeArea(
-              child: Padding(
+            body: Padding(
                 padding: EdgeInsets.only(left: 16, right: 16),
                 child: Column(
                   children: [
+                    Center(
+                      widthFactor: MediaQuery.of(context).size.width,
+                      child: Image.asset(
+                        'assets/images/bien.png',
+                        width:
+                        MediaQuery.of(context).size.width * 0.6,
+                      ),
+                    ),
                     Expanded(
                       child: Container(
                         alignment: Alignment.center,
-                        child: SingleChildScrollView(
-                          child: Column(
+                        child:  Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -111,12 +114,34 @@ class _HomeState extends State<Home> {
                                             (states) => Colors.transparent)),
                                 onPressed: () => {start(Routes.gameScreen)},
                               ),
+                              Container(height: 20,),
+                              TextButton(
+                                child: Image.asset(
+                                  'assets/images/thanhtich.png',
+                                  width:
+                                  MediaQuery.of(context).size.width * 0.5,
+                                ),
+                                style: ButtonStyle(
+                                    backgroundColor:
+                                    MaterialStateColor.resolveWith(
+                                            (states) => Colors.transparent),
+                                    padding: MaterialStateProperty.resolveWith(
+                                            (states) =>
+                                            EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                                    shadowColor: MaterialStateColor.resolveWith(
+                                            (states) => Colors.transparent),
+                                    overlayColor:
+                                    MaterialStateColor.resolveWith(
+                                            (states) => Colors.transparent)),
+                                onPressed: () => {start(Routes.gameScreen)},
+                              ),
                             ],
                           ),
                         ),
                       ),
-                    ),
+
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton(
                           child: Image.asset(
@@ -138,7 +163,6 @@ class _HomeState extends State<Home> {
                                       (states) => Colors.transparent)),
                           onPressed: () => {start(Routes.gameScreen)},
                         ),
-                        Container(width: MediaQuery.of(context).size.width * 0.59,),
                         TextButton(
                           child: Image.asset(
                             'assets/images/volum-home.png',
@@ -164,6 +188,6 @@ class _HomeState extends State<Home> {
                   ],
                 ),
               ),
-            )));
+            ));
   }
 }

@@ -1,6 +1,7 @@
 import 'package:doan_hinh/screens/gamesScreen/end_question.dart';
 import 'package:doan_hinh/screens/gamesScreen/game_screen.dart';
 import 'package:doan_hinh/screens/home/home.dart';
+import 'package:doan_hinh/screens/home/loading_screen.dart';
 import 'package:doan_hinh/screens/screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ class Routes {
   static const String signIn = "/signIn";
   static const String gameScreen = "/game_screen";
   static const String endQuestion = "/end_question";
+  static const String loadingScreen = "/loading_screen";
 
   Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -36,6 +38,13 @@ class Routes {
         return MaterialPageRoute(
           builder: (context) {
             return EndQuestion();
+          },
+        );
+
+      case loadingScreen:
+        return MaterialPageRoute(
+          builder: (context) {
+            return LoadingScreen();
           },
         );
       // case themeSetting:

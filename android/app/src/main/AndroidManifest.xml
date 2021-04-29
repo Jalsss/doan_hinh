@@ -2,6 +2,7 @@
     package="com.example.doan_hinh">
    <application
         android:label="Games"
+        android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity

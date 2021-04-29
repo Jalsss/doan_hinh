@@ -4,8 +4,7 @@ import 'dart:io';
 import 'package:doan_hinh/configs/routes.dart';
 import 'package:doan_hinh/constant/constant.dart';
 import 'package:doan_hinh/notification/notification.config.dart';
-import 'package:doan_hinh/screens/gamesScreen/game_screen.dart';
-import 'package:doan_hinh/screens/home/home.dart';
+import 'package:doan_hinh/screens/home/loading_screen.dart';
 import 'package:doan_hinh/storage/local_storage.dart';
 import 'package:doan_hinh/widgets/app_button.dart';
 import 'package:flutter/material.dart';
@@ -26,9 +25,13 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   bool isLoading = false;
+  bool loading = false;
   @override
   void initState() {
     super.initState();
+    setState(() {
+      loading = true;
+    });
   }
   final facebookLogin = FacebookLogin();
 
@@ -36,7 +39,6 @@ class _SignInState extends State<SignIn> {
     setState(() {
       isLoading = true;
     });
-    facebookLogin.loginBehavior = FacebookLoginBehavior.webViewOnly;
     final result = await facebookLogin.logIn(['email', 'public_profile']);
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
@@ -55,7 +57,7 @@ class _SignInState extends State<SignIn> {
             await get(Constant.apiAdress + '/api/mobile/game.asmx/fcmAdd' + dataFcm);
             _storage.writeValue('isSignIn', 'true');
             _storage.writeValue('appID', appID);
-            Navigator.pushReplacementNamed(context, route);
+            Navigator.restorablePushReplacementNamed(context, route);
           } else {
             return showDialog(
               context: context,
@@ -72,14 +74,14 @@ class _SignInState extends State<SignIn> {
         break;
       case FacebookLoginStatus.cancelledByUser:
         setState(() {
-          isLoading = true;
+          isLoading = false;
          });
         return showDialog(context: context, builder: (builder) { return AlertDialog(title :Text('Thông báo'),content: Text('Đăng nhập thất bại'));});
 
         break;
       case FacebookLoginStatus.error:
         setState(() {
-          isLoading = true;
+          isLoading = false;
         });
         print(result.errorMessage);
         break;
@@ -88,7 +90,7 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading? Scaffold(
       body: SafeArea(
               child: Padding(
                 padding: EdgeInsets.only(left: 16, right: 16),
@@ -132,6 +134,6 @@ class _SignInState extends State<SignIn> {
                 ),
               ),
             )
-    );
+    ): LoadingScreen();
   }
 }

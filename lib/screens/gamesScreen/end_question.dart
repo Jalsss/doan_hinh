@@ -1,10 +1,6 @@
 import 'package:doan_hinh/configs/routes.dart';
-import 'package:doan_hinh/screens/home/home.dart';
-import 'package:doan_hinh/screens/signin/signin.dart';
-import 'package:doan_hinh/storage/local_storage.dart';
 import 'package:flutter/material.dart';
 
-final _storage = new LocalStorage();
 
 class EndQuestion extends StatefulWidget {
   @override

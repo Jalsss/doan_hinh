@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:doan_hinh/constant/constant.dart';
-import 'package:doan_hinh/screens/gamesScreen/game_screen.dart';
-import 'package:doan_hinh/screens/signin/signin.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -30,9 +28,10 @@ void main() {
     if (intenet != null && intenet) {
       var res = await get(Constant.apiAdress + '/api/mobile/game.asmx/portalGet?mID=12');
       if (res.statusCode == 200) {
-        // bannerAdUnitId = Platform.isAndroid
-        //     ? json.decode(res.body)['data']['a_BieuNgu']
-        //     : json.decode(res.body)['data']['i_BieuNgu'];
+
+        bannerAdUnitId = Platform.isAndroid
+            ? (json.decode(res.body)['data']['a_Testing'] == true ? 'ca-app-pub-3940256099942544/6300978111' : json.decode(res.body)['data']['a_BieuNgu'])
+            : (json.decode(res.body)['data']['i_Testing'] == true ? 'ca-app-pub-3940256099942544/2934735716' : json.decode(res.body)['data']['i_BieuNgu']);
         var dataVs = Platform.isAndroid
             ? json.decode(res.body)['data']['a_Version']
             : json.decode(res.body)['data']['i_Version'];

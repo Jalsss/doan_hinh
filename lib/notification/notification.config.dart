@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class MyDialog extends StatelessWidget {
-  MyDialog(@required this.content);
+  MyDialog(this.content);
   String content;
 
   @override
