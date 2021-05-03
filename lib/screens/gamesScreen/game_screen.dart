@@ -3,6 +3,8 @@ import 'dart:core';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:doan_hinh/api/api.dart';
 import 'package:doan_hinh/configs/routes.dart';
 import 'package:doan_hinh/constant/ad_state.dart';
@@ -68,11 +70,25 @@ class _GameScreen extends State<GameScreen> {
   var pointAQuestion;
   var isDisableWrongCharacter = false;
   List<CharacterOpened> listOpened = new List();
-
+  AudioCache audioCache = AudioCache();
+  AudioPlayer player = new AudioPlayer();
+  bool onAudio;
   @override
   void initState() {
     super.initState();
+    if (Platform.isIOS) {
+      if (audioCache.fixedPlayer != null) {
+        audioCache.fixedPlayer.startHeadlessService();
+      }
+    }
+    checkIsOnAudio();
     getQuestion();
+  }
+  checkIsOnAudio() async {
+    var _onAudio = await _storage.readValue('backgroundMusic');
+    setState(() {
+      _onAudio == "true" ? onAudio = true : onAudio = false;
+    });
   }
 
   @override
@@ -140,7 +156,7 @@ class _GameScreen extends State<GameScreen> {
         var boChuCaiJson = datajson['boChuCai'].toString();
         var point = datajson['soDiem'].toString();
         var wrongCharacterJson = datajson['kyTuSai'].toString();
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(Duration(milliseconds: 300));
         this.setState(() {
           answer = result;
           answerVI = resultVI;
@@ -212,10 +228,16 @@ class _GameScreen extends State<GameScreen> {
           await get(
               Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpLevel' +
                   data);
+          if(onAudio) {
+            player = await audioCache.play('correct_answer.mp3');
+          }
           setState(() {
             isCorrect = true;
           });
         } else {
+          if(onAudio) {
+            player = await audioCache.play('wrong_answer.mp3');
+          }
           setState(() {
             hasError = true;
           });
@@ -232,6 +254,10 @@ class _GameScreen extends State<GameScreen> {
           .replaceAll(new RegExp(r"\s+"), "")
           .length == length1 + length2) {
         if (currentText + currentText2 == answer) {
+
+          if(onAudio) {
+            player = await audioCache.play('correct_answer.mp3');
+          }
           String data = '?mID=12&appID=' + appIDState + '&isLevel=' +
               (int.parse(levelInt) + 1).toString() + '&adPoint=' +
               pointAQuestion;
@@ -242,6 +268,9 @@ class _GameScreen extends State<GameScreen> {
             isCorrect = true;
           });
         } else {
+          if(onAudio) {
+            player = await audioCache.play('wrong_answer.mp3');
+          }
           setState(() {
             hasError = true;
           });
@@ -251,6 +280,9 @@ class _GameScreen extends State<GameScreen> {
   }
 
   press(int i) async {
+    if(onAudio) {
+      player = await audioCache.play('touch.mp3');
+    }
     if (dataBk[i] != ' ') {
       if (length2 == 0) {
         if (currentText
@@ -308,6 +340,9 @@ class _GameScreen extends State<GameScreen> {
         Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpDePoint' +
             dataAPI);
     if (res.statusCode == 200) {
+      if(onAudio) {
+        player = await audioCache.play('correct_answer.mp3');
+      }
       setState(() {
         adPointInt = 0;
         isCorrect = true;
@@ -556,6 +591,9 @@ class _GameScreen extends State<GameScreen> {
   }
 
   back(String routes) async {
+    if(onAudio) {
+      player = await audioCache.play('play.mp3');
+    }
     await Navigator.pushReplacementNamed(context, routes);
   }
 
@@ -724,9 +762,12 @@ class _GameScreen extends State<GameScreen> {
                                         .resolveWith((states) =>
                                     Colors.transparent)
                                 ),
-                                onPressed: () =>
+                                onPressed: () async =>
                                 {
 
+                                if(onAudio) {
+                                  player = await audioCache.play('help.mp3')
+                                },
                                   showDialog<void>(
                                       context: context, builder: (builder) {
                                     return HelpDialog(
@@ -734,19 +775,36 @@ class _GameScreen extends State<GameScreen> {
                                       openCharacter: moChuCai,
                                       disableWrongCharacter: boChuCai,
 
-                                      openAnswerF: () {
+                                      openAnswerF: () async{
+                                        if(onAudio) {
+                                          player =
+                                          await audioCache.play('use_coin.mp3');
+                                        }
                                         openAnswerF();
                                       },
-                                      openCharacterF: () {
+                                      openCharacterF: () async{
+                                        if(onAudio) {
+                                          player =
+                                          await audioCache.play('use_coin.mp3');
+                                        }
                                         openCharacterF();
                                       },
-                                      disableWrongCharacterF: () {
+                                      disableWrongCharacterF: () async{
+                                        if(onAudio) {
+                                          player =
+                                          await audioCache.play('use_coin.mp3');
+                                        }
                                         disableWrongCharacterF();
                                       },
                                       isDisableWrongCharacter: isDisableWrongCharacter,
                                       shareOnFaceBook: () {
                                         shareToFacebook();
-                                      },);
+                                      },
+                                    closeDialog: () async {
+                                if(onAudio) {
+                                  player = await audioCache.play('play.mp3');
+                                }
+                                    },);
                                   })
                                 },
                               )),
@@ -800,7 +858,10 @@ class _GameScreen extends State<GameScreen> {
                     fontFamily: 'Chalkboard SE',
                     color: hasError ? Colors.red : Colors.white),
                 pinBoxBorderWidth: 0.5,
-                removeFromResult: (i, text) {
+                removeFromResult: (i, text) async {
+                  if(onAudio) {
+                    player = await audioCache.play('touch.mp3');
+                  }
                   var index = arraysBk.keys.firstWhere(
                           (k) => arraysBk[k] == text, orElse: () => null);
                   if (index != null) {
@@ -839,7 +900,10 @@ class _GameScreen extends State<GameScreen> {
                     fontFamily: 'Chalkboard SE',
                     color: hasError ? Colors.red : Colors.white),
                 pinBoxBorderWidth: 0.5,
-                removeFromResult: (i, text) {
+                removeFromResult: (i, text) async {
+                  if(onAudio) {
+                    player = await audioCache.play('touch.mp3');
+                  }
                   var index = arraysBk.keys.firstWhere(
                           (k) => arraysBk[k] == text, orElse: () => null);
                   if (index != null) {
@@ -1056,7 +1120,7 @@ class _GameScreen extends State<GameScreen> {
                 children: [
 
                   SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.21,
+                      width: MediaQuery.of(context).size.width * 0.25,
                       child: TextButton(
                         child: Stack(
                             alignment:
@@ -1067,7 +1131,7 @@ class _GameScreen extends State<GameScreen> {
                                 width: MediaQuery.of(context)
                                     .size
                                     .width *
-                                    0.35,
+                                    0.6,fit: BoxFit.fill,
                               ),
                               Center(
                                   child: Container(
@@ -1085,12 +1149,15 @@ class _GameScreen extends State<GameScreen> {
                           backgroundColor: Colors.transparent,
                           padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                         ),
-                        onPressed: () => {
+                        onPressed: () async => {
+                        if(onAudio) {
+                          player = await audioCache.play('play.mp3')
+                        },
                           this.getQuestion()
                         },
                       )),
                   SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.21,
+                      width: MediaQuery.of(context).size.width * 0.25,
                       child: TextButton(
                         child: Stack(
                             alignment:

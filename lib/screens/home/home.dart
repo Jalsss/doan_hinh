@@ -1,4 +1,8 @@
 
+import 'dart:io';
+
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:doan_hinh/configs/routes.dart';
 import 'package:doan_hinh/constant/constant.dart';
 import 'package:doan_hinh/storage/local_storage.dart';
@@ -19,15 +23,40 @@ class Home extends StatefulWidget {
 
 class _HomeScreen extends State<Home> {
   bool isLoading = false;
-
+  AudioCache audioCache = AudioCache();
+  AudioPlayer player = new AudioPlayer();
+  bool onAudio = true;
   _HomeScreen();
 
   @override
   void initState() {
     super.initState();
+    if (Platform.isIOS) {
+      if (audioCache.fixedPlayer != null) {
+        audioCache.fixedPlayer.startHeadlessService();
+      }
+    }
+    checkIsOnAudio();
+  }
+
+  checkIsOnAudio() async {
+    var _onAudio = await _storage.readValue('backgroundMusic');
+    if (_onAudio == null) {
+      setState(() {
+        onAudio = true;
+      });
+      _storage.writeValue('backgroundMusic', this.onAudio.toString());
+    } else {
+      setState(() {
+        _onAudio == "true" ? onAudio = true : onAudio = false;
+      });
+    }
   }
 
   start(String routes) async {
+    if(onAudio) {
+      player = await audioCache.play('play.mp3');
+    }
     setState(() {
       isLoading = true;
     });
@@ -165,7 +194,7 @@ class _HomeScreen extends State<Home> {
                         ),
                         TextButton(
                           child: Image.asset(
-                            'assets/images/volum-home.png',
+                            onAudio? 'assets/images/volum-home.png': 'assets/images/gift-home.png',
                             width:
                             MediaQuery.of(context).size.width * 0.15,
                           ),
@@ -181,7 +210,13 @@ class _HomeScreen extends State<Home> {
                               overlayColor:
                               MaterialStateColor.resolveWith(
                                       (states) => Colors.transparent)),
-                          onPressed: () => {start(Routes.gameScreen)},
+                          onPressed: () => {
+                            this.setState(() {
+                              onAudio = !onAudio;
+                            }),
+                            _storage.deleteValue('backgroundMusic'),
+                            _storage.writeValue('backgroundMusic', this.onAudio.toString()),
+                          },
                         ),
                       ],
                     )

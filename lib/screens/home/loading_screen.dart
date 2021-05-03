@@ -1,9 +1,10 @@
+import 'dart:io';
 
+import 'package:doan_hinh/constant/hexcolor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class LoadingScreen extends StatefulWidget {
-
   LoadingScreen({Key key}) : super(key: key);
 
   @override
@@ -13,6 +14,25 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreen extends State<LoadingScreen> {
+  double percent = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loading();
+  }
+
+  loading() async {
+    setState(() {
+      percent = 0;
+    });
+    await Future.delayed(Duration(seconds: 0));
+    setState(() {
+      percent = 100;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -25,7 +45,7 @@ class _LoadingScreen extends State<LoadingScreen> {
         child: Scaffold(
             backgroundColor: Colors.transparent,
             body: Center(
-              child: Image.asset('assets/images/tenor.gif',width: MediaQuery.of(context).size.width * 0.8,),
+              child: Image.asset('assets/images/giphy.gif',width: MediaQuery.of(context).size.width * 0.8,),
             )));
   }
 }

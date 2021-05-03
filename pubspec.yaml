@@ -34,6 +34,7 @@ dependencies:
   google_mobile_ads: ^0.11.0+3
   firebase_core: ^1.0.3
   provider: ^4.3.3
+  audioplayers: ^0.16.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
@@ -49,6 +50,12 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/
+    - play.mp3
+    - touch.mp3
+    - correct_answer.mp3
+    - wrong_answer.mp3
+    - help.mp3
+    - use_coin.mp3
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

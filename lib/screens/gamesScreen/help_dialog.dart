@@ -1,4 +1,4 @@
-import 'package:doan_hinh/widgets/app_button.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +11,7 @@ class HelpDialog extends StatefulWidget {
   final Function() openAnswerF;
   final Function() disableWrongCharacterF;
   final Function() shareOnFaceBook;
+  final Function() closeDialog;
 
   HelpDialog(
       {Key key,
@@ -21,7 +22,8 @@ class HelpDialog extends StatefulWidget {
       this.disableWrongCharacterF,
       this.openAnswerF,
       this.isDisableWrongCharacter,
-      this.shareOnFaceBook})
+      this.shareOnFaceBook,
+      this.closeDialog})
       : super(key: key);
 
   @override
@@ -51,6 +53,11 @@ class _HelpDialog extends State<HelpDialog> {
   shareOnFaceBook() {
     var shareOnFaceBook = widget.shareOnFaceBook;
     shareOnFaceBook();
+  }
+  closeDialog() {
+    var closeDialog = widget.closeDialog;
+    closeDialog();
+    Navigator.of(context, rootNavigator: true).pop();
   }
   @override
   Widget build(BuildContext context) {
@@ -101,7 +108,7 @@ class _HelpDialog extends State<HelpDialog> {
                           ),
                           onPressed: () =>
                           {
-                          Navigator.of(context, rootNavigator: true).pop()
+                            closeDialog()
                           },
                         )),
                   ]),
@@ -139,12 +146,12 @@ class _HelpDialog extends State<HelpDialog> {
                                               child: Row(
                                                 children: [
                                                   Text(
-                                                      widget.disableWrongCharacter
-                                                              .toString() +
+                                                  widget.openCharacter
+                                                  .toString() +
                                                           " xu ",
                                                       style: TextStyle(
                                                           color: Colors.white,
-                                                          fontSize: 16,
+                                                          fontSize: 15,
                                                           fontFamily:
                                                               'Chalkboard SE')),
                                                   Image.asset(
@@ -164,7 +171,7 @@ class _HelpDialog extends State<HelpDialog> {
                                   backgroundColor: Colors.transparent,
                                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                                 ),
-                                onPressed: () => {disableWrongCharacter()},
+                                onPressed: () => {openCharacter()},
                               )),
                         ],
                       ),
@@ -204,12 +211,12 @@ class _HelpDialog extends State<HelpDialog> {
                                               child: Row(
                                                 children: [
                                                   Text(
-                                                      widget.openCharacter
-                                                              .toString() +
+                                                      widget.disableWrongCharacter
+                                                          .toString() +
                                                           " xu ",
                                                       style: TextStyle(
                                                           color: Colors.white,
-                                                          fontSize: 16,
+                                                          fontSize: 15,
                                                           fontFamily:
                                                               'Chalkboard SE')),
                                                   Image.asset(
@@ -229,7 +236,7 @@ class _HelpDialog extends State<HelpDialog> {
                                   backgroundColor: Colors.transparent,
                                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                                 ),
-                                onPressed: () => {openCharacter()},
+                                onPressed: () => {disableWrongCharacter()},
                               )),
                         ],
                       ),
@@ -276,7 +283,7 @@ class _HelpDialog extends State<HelpDialog> {
                                                             " xu ",
                                                         style: TextStyle(
                                                             color: Colors.white,
-                                                            fontSize: 16,
+                                                            fontSize: 15,
                                                             fontFamily:
                                                                 'Chalkboard SE')),
                                                     Image.asset(
@@ -305,7 +312,8 @@ class _HelpDialog extends State<HelpDialog> {
                   ),
                   Container(height: 10,),
                   SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.21,
+                      width: MediaQuery.of(context).size.width * 0.50,
+                      height: 50,
                       child: TextButton(
                         child: Stack(
                             alignment:
@@ -316,12 +324,14 @@ class _HelpDialog extends State<HelpDialog> {
                                 width: MediaQuery.of(context)
                                     .size
                                     .width *
-                                    0.30,
+                                    0.80,
+                                fit: BoxFit.fill,
+                                height: 70,
                               ),
                               Center(
                                   child: Container(
                                       child:
-                                          Text('Chia sẻ',
+                                          Text('Trợ giúp Facebook',
                                               style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 19,
