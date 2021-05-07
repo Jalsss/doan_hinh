@@ -46,9 +46,11 @@ class _HelpDialog extends State<HelpDialog> {
   }
 
   disableWrongCharacter() {
-    var disableWrongCharacterF = widget.disableWrongCharacterF;
-    disableWrongCharacterF();
-    Navigator.of(context, rootNavigator: true).pop();
+    if(!widget.isDisableWrongCharacter) {
+      var disableWrongCharacterF = widget.disableWrongCharacterF;
+      disableWrongCharacterF();
+      Navigator.of(context, rootNavigator: true).pop();
+    }
   }
   shareOnFaceBook() {
     var shareOnFaceBook = widget.shareOnFaceBook;
@@ -130,7 +132,7 @@ class _HelpDialog extends State<HelpDialog> {
                                   color: Colors.brown.shade900,
                                   fontWeight: FontWeight.bold)),
                           SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.21,
+                              width: MediaQuery.of(context).size.width * 0.22,
                               child: TextButton(
                                 child: Stack(
                                     alignment: AlignmentDirectional.centerStart,
@@ -144,11 +146,12 @@ class _HelpDialog extends State<HelpDialog> {
                                       Center(
                                           child: Container(
                                               child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                 children: [
                                                   Text(
                                                   widget.openCharacter
                                                   .toString() +
-                                                          " xu ",
+                                                          " xu",
                                                       style: TextStyle(
                                                           color: Colors.white,
                                                           fontSize: 15,
@@ -195,8 +198,9 @@ class _HelpDialog extends State<HelpDialog> {
                                   color: Colors.brown.shade900,
                                   fontWeight: FontWeight.bold)),
                           SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.21,
+                              width: MediaQuery.of(context).size.width * 0.22,
                               child: TextButton(
+
                                 child: Stack(
                                     alignment: AlignmentDirectional.centerStart,
                                     children: <Widget>[
@@ -209,11 +213,12 @@ class _HelpDialog extends State<HelpDialog> {
                                       Center(
                                           child: Container(
                                               child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                 children: [
                                                   Text(
                                                       widget.disableWrongCharacter
                                                           .toString() +
-                                                          " xu ",
+                                                          " xu",
                                                       style: TextStyle(
                                                           color: Colors.white,
                                                           fontSize: 15,
@@ -260,7 +265,7 @@ class _HelpDialog extends State<HelpDialog> {
                                     color: Colors.brown.shade900,
                                     fontWeight: FontWeight.bold)),
                             SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.21,
+                                width: MediaQuery.of(context).size.width * 0.22,
                                 child: TextButton(
                                   child: Stack(
                                       alignment:
@@ -276,11 +281,12 @@ class _HelpDialog extends State<HelpDialog> {
                                         Center(
                                             child: Container(
                                                 child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                   children: [
                                                     Text(
                                                         widget.openAnswer
                                                                 .toString() +
-                                                            " xu ",
+                                                            " xu",
                                                         style: TextStyle(
                                                             color: Colors.white,
                                                             fontSize: 15,
