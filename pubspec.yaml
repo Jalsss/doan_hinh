@@ -36,9 +36,21 @@ dependencies:
   provider: ^4.3.3
   audioplayers: ^0.16.0
   flutter_icons: ^1.1.0
+  open_appstore: ^1.0.2
+  sign_in_with_apple: ^3.0.0
+  loading_overlay: ^0.3.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
+  flutter_native_splash: ^0.2.8
+
+flutter_native_splash:
+  color: "#69435c"
+  image: assets/images/splash.png
+  color_dark: "#69435c"
+  image_dark: assets/images/splash.png
+  android: true
+  ios: true
 
 dev_dependencies:
   flutter_test:

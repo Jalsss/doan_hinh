@@ -24,6 +24,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart';
+import 'package:open_appstore/open_appstore.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
@@ -85,6 +86,7 @@ class _GameScreen extends State<GameScreen> {
   List<Achievements> achievementsGold = [];
   List<Achievements> achievementsSilver = [];
   AdListener listener ;
+  String iD = '';
   @override
   void initState() {
     super.initState();
@@ -120,6 +122,10 @@ class _GameScreen extends State<GameScreen> {
             Constant.apiAdress + '/api/mobile/game.asmx/gameImgQC' +
                 data);
         await getLevelAndPoint();
+
+        return showDialog(context: context, builder: (context) {
+          return CollectDialog();
+        });
       },
     );
     checkIsOnAudio();
@@ -272,6 +278,7 @@ class _GameScreen extends State<GameScreen> {
           currentText2 = '';
           wrongCharacter = wrongCharacterJson;
           isDisableWrongCharacter = false;
+          iD = json.decode(res.body)['data']['iD'].toString();
         });
       } else {
         Navigator.pushReplacementNamed(context, Routes.endQuestion);
@@ -312,7 +319,7 @@ class _GameScreen extends State<GameScreen> {
   inputFirstLine(int i) {
     if (controller.value.text.length == currentText
         .replaceAll(new RegExp(r"\s+"), "")
-        .length) {
+        .length && currentText.length < length1) {
       setState(() {
         currentText += '${dataBk[i]}';
       });
@@ -351,7 +358,7 @@ class _GameScreen extends State<GameScreen> {
                     await audioCache.play('play.mp3');
                   }
                 },
-                content: json.decode(res.body)['message'] == 'Bac' ?' Bạc' : (json.decode(res.body)['message'] == 'Vang' ? ' Vàng' : ' Kim cương'),
+                content: json.decode(res.body)['message'] == 'Bac' ?'Bạc' : (json.decode(res.body)['message'] == 'Vang' ? 'Vàng' : 'Kim cương'),
               );
             }
             );
@@ -433,7 +440,7 @@ class _GameScreen extends State<GameScreen> {
           } else {
             if (controller2.value.text.length == currentText2
                 .replaceAll(new RegExp(r"\s+"), "")
-                .length) {
+                .length && currentText2.length < length2) {
               setState(() {
                 currentText2 += '${dataBk[i]}';
               });
@@ -503,14 +510,17 @@ class _GameScreen extends State<GameScreen> {
     if (controller.value.text.length == currentText
         .replaceAll(new RegExp(r"\s+"), "")
         .length) {
-      var index = controller.value.text.length +
-          Random().nextInt(answer.length - controller.value.text.length);
-      String character = answer[index];
-      var i = 0;
-      for (int j = 0; j < dataBk.length; j ++) {
-        if (dataBk[j] == character) {
-          i = j;
-          break;
+      var i = -1;
+      var index;
+      while(i == -1) {
+        index = controller.value.text.length +
+            Random().nextInt(answer.length - controller.value.text.length);
+        String character = answer[index];
+        for (int j = 0; j < dataBk.length; j ++) {
+          if (dataBk[j] == character) {
+            i = j;
+            break;
+          }
         }
       }
       CharacterOpened characterOpened = new CharacterOpened(
@@ -567,6 +577,55 @@ class _GameScreen extends State<GameScreen> {
     checkAnswer();
   }
 
+  addBackupCharacterForDisableWrong() {
+    var text = '';
+    for (int i = 0; i < length1; i++) {
+      List<CharacterOpened> check = [];
+      check = listOpened.where((element) => element.indexText == i).toList();
+      if (check.length == 0) {
+        text += ' ';
+      } else {
+        text += check
+            .elementAt(0)
+            .character;
+      }
+    }
+
+    setState(() {
+      currentText = text;
+    });
+  }
+  addBackupCharacterTwoLineForDisableWrong() {
+    var text1 = '';
+    var text2 = '';
+    for (int i = 0; i < length1; i++) {
+      List<CharacterOpened> check = [];
+      check = listOpened.where((element) => element.indexText == i).toList();
+      if (check.length == 0) {
+        text1 += ' ';
+      } else {
+        text1 += check
+            .elementAt(0)
+            .character;
+      }
+    }
+    for (int i = 0; i < length2; i++) {
+      List<CharacterOpened> check = [];
+      check = listOpened.where((element) => element.indexText - length1 == i)
+          .toList();
+      if (check.length == 0) {
+        text2 += ' ';
+      } else {
+        text2 += check
+            .elementAt(0)
+            .character;
+      }
+    }
+    setState(() {
+      currentText = text1;
+      currentText2 = text2;
+    });
+  }
   addBackupCharacterTwoLines(int indexArrays) {
     var text1 = '';
     var text2 = '';
@@ -684,6 +743,7 @@ class _GameScreen extends State<GameScreen> {
         }
         setState(() {
           dataBk = databk;
+          currentText = '';
         });
         if (length2 == 0) {
           if (currentText
@@ -728,6 +788,31 @@ class _GameScreen extends State<GameScreen> {
 
   disableWrongCharacterF() async {
     if (int.parse(adPointInt) - int.parse(boChuCai) > 0) {
+      var databk = [];
+      for (int i = 0; i < localData.length; i ++) {
+        List<CharacterOpened> check = [];
+        check =
+            listOpened.where((element) => element.indexArray == i).toList();
+        if (check.length == 0) {
+          databk.add(localData[i]);
+        } else {
+          databk.add(' ');
+        }
+      }
+      setState(() {
+        dataBk = databk;
+        currentText = '';
+        currentText2 = '';
+        controller.value = TextEditingValue(text: '');
+        controller2.value = TextEditingValue(text: '');
+      });
+
+      if(length2 == 0) {
+        addBackupCharacterForDisableWrong();
+      } else {
+        addBackupCharacterTwoLineForDisableWrong();
+      }
+
       String dataAPI = '?mID=12&appID=' + appIDState + '&dePoint=' + boChuCai;
       var res = await get(
           Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpDePoint' +
@@ -791,8 +876,9 @@ class _GameScreen extends State<GameScreen> {
 
     final text = 'Mọi người giúp mình với';
     final RenderBox box = context.findRenderObject();
-    Share.shareFiles([path], subject: text, text: text,
-        sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+    Share.share('http://game.izilife.vn/games.aspx?v=' + iD,subject: text);
+    // Share.shareFiles([path], subject: text, text: text,
+    //     sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
   }
 
   @override
@@ -941,6 +1027,14 @@ class _GameScreen extends State<GameScreen> {
                                   closeDialog: () {
 
                                   },
+                                  shareOnFaceBook: () {
+                                    Share.share(linkup);
+                                  },
+                                  voteGames: () {
+                                    OpenAppstore.launch(
+                                        androidAppId: linkup,
+                                        iOSAppId: linkup);
+                                  },
                                 );
                               }
                             );
@@ -960,10 +1054,23 @@ class _GameScreen extends State<GameScreen> {
                               width: percentWidth(100),
                               height: percentHeight(36),
                               fit: BoxFit.fill),
-                          isLoaded ? Image.network(
-                              imgPath, width: percentWidth(81),
-                              height: percentHeight(29),
-                              fit: BoxFit.fill) : Container(),
+                          isLoaded ? Container(
+                            margin: EdgeInsets.only(bottom: 20),
+                            child: Column(
+                              children: [
+                                Text(questionTitle, style: TextStyle(
+                                    fontSize: percentWidth(4),
+                                    fontFamily: 'Chalkboard SE',
+                                    color: Colors.brown.shade900,
+                                    fontWeight: FontWeight.bold)),
+                                Container(height: 5,),
+                                Image.network(
+                                    imgPath, width: percentWidth(81),
+                                    height: percentHeight(27),
+                                    fit: BoxFit.fill)
+                              ],
+                            )
+                          ): Container(),
                         ]),
                     Column(
                         children: [

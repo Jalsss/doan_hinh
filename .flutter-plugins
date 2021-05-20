@@ -8,5 +8,7 @@ firebase_core_web=/Users/vananhnguyen/flutter/.pub-cache/hosted/pub.dartlang.org
 flutter_facebook_login=/Users/vananhnguyen/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_facebook_login-3.0.0/
 flutter_secure_storage=/Users/vananhnguyen/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage-4.1.0/
 google_mobile_ads=/Users/vananhnguyen/flutter/.pub-cache/hosted/pub.dartlang.org/google_mobile_ads-0.11.0+4/
+open_appstore=/Users/vananhnguyen/flutter/.pub-cache/hosted/pub.dartlang.org/open_appstore-1.0.2/
 path_provider=/Users/vananhnguyen/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider-1.6.1/
 share=/Users/vananhnguyen/flutter/.pub-cache/hosted/pub.dartlang.org/share-2.0.1/
+sign_in_with_apple=/Users/vananhnguyen/flutter/.pub-cache/hosted/pub.dartlang.org/sign_in_with_apple-3.0.0/

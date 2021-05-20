@@ -38,11 +38,11 @@ class _AppState extends State<App> {
           if(isSignIn == null) {
             return MaterialApp(
                 onGenerateRoute: route.generateRoute,
-                home :  SignIn() );
+                home :  SignIn(),debugShowCheckedModeBanner: false, );
           } else {
                 return MaterialApp(
                 onGenerateRoute: route.generateRoute,
-                home : Home());
+                home : Home(), debugShowCheckedModeBanner: false,);
           }
     });
   }

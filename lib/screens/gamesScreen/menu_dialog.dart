@@ -70,12 +70,12 @@ class _MenuDialog extends State<MenuDialog> {
         child: Stack(
             alignment: Alignment.center, children: <Widget>[
           Image.asset('assets/images/box-2.png',
-              height: 430,
+              height: 350,
               width:MediaQuery.of(context).size.width *
                   0.9,
               fit: BoxFit.fill),
           Container(
-            height: 540,
+            height: 460,
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -112,51 +112,6 @@ class _MenuDialog extends State<MenuDialog> {
                           },
                         )),
                   ]),
-                  Container(height: 10,),
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.80,
-                      height: 50,
-                      child: TextButton(
-                        child: Stack(
-                            alignment:
-                            AlignmentDirectional.centerStart,
-                            children: <Widget>[
-                              Image.asset(
-                                'assets/images/box-1.png',
-                                width: MediaQuery.of(context)
-                                    .size
-                                    .width *
-                                    0.80,
-                                fit: BoxFit.fill,
-                                height: 70,
-                              ),
-                              Center(
-                                  child: Container(
-                                      child:
-                                      Text('Hướng dẫn chơi',
-                                          style: TextStyle(
-                                              color: Colors.brown.shade900,
-                                              fontSize: 20,
-                                              fontFamily:
-                                              'Chalkboard SE')),
-                                      margin: EdgeInsets.fromLTRB(
-                                          6, 0, 6, 0))),
-                            ]),
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateColor
-                                  .resolveWith((states) =>
-                              Colors.transparent),
-                              padding: MaterialStateProperty.resolveWith((
-                                  states) => EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                              shadowColor: MaterialStateColor.resolveWith((
-                                  states) => Colors.transparent),
-                              overlayColor: MaterialStateColor.resolveWith((
-                                  states) => Colors.transparent)
-                          ),
-                        onPressed: () => {
-                          tutorial()
-                        },
-                      )),
                   Container(height: 10,),
                   SizedBox(
                       width: MediaQuery.of(context).size.width * 0.80,

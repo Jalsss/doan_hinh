@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:doan_hinh/constant/constant.dart';
+import 'package:doan_hinh/screens/home/home.dart';
+import 'package:doan_hinh/screens/signin/signin.dart';
+import 'package:doan_hinh/storage/local_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +12,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'api/api.dart';
+import 'configs/routes.dart';
 import 'constant/ad_state.dart';
 
 import 'app.dart';
@@ -20,6 +24,7 @@ var version = Platform.isAndroid ? '1.2' : '1.0';
 bool isVersion = true;
 var linkup = '';
 void main() {
+  final route = Routes();
   GestureBinding.instance?.resamplingEnabled = true;
   WidgetsFlutterBinding.ensureInitialized();
   final initFuture = MobileAds.instance.initialize();
@@ -43,14 +48,34 @@ void main() {
         }
       }
       await Firebase.initializeApp();
-      runApp(Provider.value(
-        value: adState,
-        builder: (context, child) => App(),
-      ));
+
+      final _storage = new LocalStorage();
+      var isSignIn;
+      isSignIn = await _storage.readValue('isSignIn');
+
+      if(isSignIn == null) {
+        runApp(Provider.value(
+          value: adState,
+          builder: (context, child) =>
+              MaterialApp(
+                onGenerateRoute: route.generateRoute,
+                home: SignIn(), debugShowCheckedModeBanner: false,),
+        ));
+      } else {
+        runApp(Provider.value(
+          value: adState,
+          builder: (context, child) =>
+              MaterialApp(
+                onGenerateRoute: route.generateRoute,
+                home: Home(), debugShowCheckedModeBanner: false,),
+        ));
+      }
     } else {
       runApp(Provider.value(
         value: adState,
-        builder: (context, child) => App(),
+        builder: (context, child) => MaterialApp(
+            onGenerateRoute: route.generateRoute,
+            home: SignIn(), debugShowCheckedModeBanner: false,),
       ));
     }
   });
