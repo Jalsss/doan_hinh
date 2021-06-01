@@ -1,3 +1,4 @@
+import 'package:device_info/device_info.dart';
 import 'package:doan_hinh/constant/hexcolor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +47,8 @@ class _AchievementsDialog extends State<AchievementsDialog> {
           'assets/images/box-1.png',
           fit: BoxFit.fill,
           width: MediaQuery.of(context).size.width * 0.75,
-          height: 75,
+          height: isIpad ? MediaQuery.of(context).size.width *
+              0.13:75,
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(armorial >= 50 ? 0 : 7, 0, 12, 00),
@@ -109,7 +111,7 @@ class _AchievementsDialog extends State<AchievementsDialog> {
                               fontWeight: FontWeight.bold)),
                       Text('Level ' + level,
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.03 :18,
                               fontFamily: 'Chalkboard SE',
                               color: Colors.black,
                               fontWeight: FontWeight.bold)),
@@ -144,8 +146,10 @@ class _AchievementsDialog extends State<AchievementsDialog> {
                         color: HexColor.fromHex('#e8d6d0'), spreadRadius: 5),
                   ],
                 ),
-                width: 70,
-                height: 80,
+                width: isIpad ? MediaQuery.of(context).size.width *
+                    0.1:70,
+                height: isIpad ? MediaQuery.of(context).size.width *
+                    0.13:80,
               ),
             ],
           ),
@@ -153,6 +157,27 @@ class _AchievementsDialog extends State<AchievementsDialog> {
       ]),
       margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
     );
+  }
+  bool isIpad = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getPlatform();
+  }
+
+  Future<bool> getPlatform() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    IosDeviceInfo info = await deviceInfo.iosInfo;
+    if (info.model.toLowerCase().contains("ipad")) {
+      setState(() {
+        isIpad = true;
+      });
+    } else {
+      setState(() {
+        isIpad = false;
+      });
+    }
   }
 
   @override
@@ -165,11 +190,13 @@ class _AchievementsDialog extends State<AchievementsDialog> {
         //title: Center(child: Text('Gợi ý'),),
         child: Stack(alignment: Alignment.center, children: <Widget>[
           Image.asset('assets/images/box-2.png',
-              height: 440,
+              height: isIpad ? MediaQuery.of(context).size.height *
+                  0.65 :440,
               width: MediaQuery.of(context).size.width * 0.9,
               fit: BoxFit.fill),
           Container(
-              height: 530,
+              height: isIpad ? MediaQuery.of(context).size.height *
+                  0.75 : 530,
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -179,7 +206,7 @@ class _AchievementsDialog extends State<AchievementsDialog> {
                             fit: BoxFit.fill),
                         Text('Thành tích',
                             style: TextStyle(
-                                fontSize: 35,
+                                fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.07 :35,
                                 fontFamily: 'Chalkboard SE',
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold)),
@@ -208,7 +235,7 @@ class _AchievementsDialog extends State<AchievementsDialog> {
                       height: 10,
                     ),
                     Container(
-                        height: 290,
+                        height: isIpad == true ? MediaQuery.of(context).size.height * 0.38 :290,
                         child: SingleChildScrollView(
                             child: Stack(children: <Widget>[
                           new Column(children: [

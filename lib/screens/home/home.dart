@@ -7,16 +7,22 @@ import 'package:doan_hinh/api/api.dart';
 import 'package:doan_hinh/configs/routes.dart';
 import 'package:doan_hinh/constant/ad_state.dart';
 import 'package:doan_hinh/constant/constant.dart';
+import 'package:doan_hinh/notification/notification.config.dart';
 import 'package:doan_hinh/screens/gamesScreen/achievements_dialog.dart';
 import 'package:doan_hinh/screens/gamesScreen/armorial_dialog.dart';
 import 'package:doan_hinh/screens/gamesScreen/game_screen.dart';
+import 'package:doan_hinh/screens/gamesScreen/login_dialog.dart';
 import 'package:doan_hinh/screens/gamesScreen/reward_dialog.dart';
 import 'package:doan_hinh/storage/local_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
+import '../../main.dart';
 
 final _storage = new LocalStorage();
 
@@ -31,6 +37,7 @@ class Home extends StatefulWidget {
 
 class _HomeScreen extends State<Home> {
   bool isLoading = false;
+  bool loading = false;
   AudioCache audioCache = AudioCache();
   AudioPlayer player = new AudioPlayer();
   bool onAudio = true;
@@ -44,7 +51,7 @@ class _HomeScreen extends State<Home> {
   AdListener listener;
   var appIDState;
   RewardedAd myRewarded;
-
+  bool isLogin = true;
   @override
   void initState() {
     super.initState();
@@ -91,7 +98,7 @@ class _HomeScreen extends State<Home> {
         adState.initialization.then((status) {
           setState(() {
             myRewarded = RewardedAd(
-              adUnitId: 'ca-app-pub-3940256099942544/1712485313',
+              adUnitId: rewardAdUnitId,
               request: AdRequest(),
               listener: listener,
             )..load();
@@ -101,9 +108,183 @@ class _HomeScreen extends State<Home> {
     });
   }
 
+  final facebookLogin = FacebookLogin();
+
+  login() async {
+    setState(() {
+      loading = true;
+    });
+    final result = await facebookLogin.logIn(['email', 'public_profile']);
+    var token = await _storage.readValue('token');
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        var graphResponse = await get(
+            'https://graph.facebook.com/${result.accessToken
+                .userId}?fields=name,first_name,last_name,email&access_token=${result
+                .accessToken.token}');
+        if (graphResponse.statusCode == 200) {
+          String appID = json.decode(graphResponse.body)["email"] != null
+              ? json.decode(graphResponse.body)["email"]
+              : json.decode(graphResponse.body)["id"];
+          String appSystem = Platform.isAndroid ? "0" : "1";
+          String data = "?mID=12&appID=" +
+              appID +
+              "&avatar=https://graph.facebook.com/" +
+              result.accessToken.userId +
+              "/picture?height=200" +
+              "&hoVaTen=" +
+              json.decode(graphResponse.body)["name"] +
+              "&appSystem=" +
+              appSystem;
+
+          final res = await get(
+              'http://api.keng.com.vn/api/mobile/fbAdd.asmx/fbAdd' + data);
+          if (res.statusCode == 200) {
+            String dataFcm = "?mID=12&appID=" +
+                token +
+                "&newID=" +
+                appID ;
+            await get(
+                Constant.apiAdress + '/api/mobile/game.asmx/appChange' + dataFcm);
+            _storage.writeValue('isSignIn', 'true');
+            _storage.writeValue('appID', appID);
+            _storage.deleteValue('token');
+            Navigator.of(context, rootNavigator: true).pop();
+            setState(() {
+              isLogin = true;
+            });
+            return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return MyDialog('Đăng nhập thành công');
+              },
+            );
+          } else {
+            Navigator.of(context, rootNavigator: true).pop();
+            return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return MyDialog('Đã xảy ra lỗi, vui lòng thử lại sau');
+              },
+            );
+          }
+
+          setState(() {
+            loading = false;
+          });
+        }
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        setState(() {
+          loading = false;
+        });
+        Navigator.of(context, rootNavigator: true).pop();
+        return showDialog(
+            context: context,
+            builder: (builder) {
+              return AlertDialog(
+                  title: Text('Thông báo'),
+                  content: Text('Đăng nhập thất bại'));
+            });
+
+        break;
+      case FacebookLoginStatus.error:
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() {
+          loading = false;
+        });
+        print(result.errorMessage);
+        break;
+    }
+  }
+
+  loginWithApple() async {
+    setState(() {
+      loading = true;
+    });
+    var token = await _storage.readValue('token');
+    var credential;
+    try {
+      credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+    } catch (Exception) {
+      setState(() {
+        loading = false;
+      });
+    }
+    if (credential.userIdentifier != null) {
+      String appSystem = Platform.isAndroid ? "0" : "1";
+      String appID = credential.userIdentifier;
+      String data = "?mID=12&appID=" +
+          appID +
+          "&avatar=''" +
+          "&hoVaTen=" +
+          credential.givenName +
+          "&appSystem=" +
+          appSystem;
+      final res = await get(
+          'http://api.keng.com.vn/api/mobile/fbAdd.asmx/fbAdd' + data);
+      if (res.statusCode == 200) {
+        String dataFcm = "?mID=12&appID=" +
+            token +
+            "&newID=" +
+            appID ;
+        await get(
+            Constant.apiAdress + '/api/mobile/game.asmx/appChange' + dataFcm);
+        _storage.writeValue('isSignIn', 'true');
+        _storage.writeValue('appID', appID);
+        _storage.deleteValue('token');
+        setState(() {
+          loading = false;
+        });
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() {
+          isLogin = true;
+        });
+        return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MyDialog('Đăng nhập thành công');
+          },
+        );
+      } else {
+        setState(() {
+          loading = false;
+        });
+        Navigator.pop(context);
+        return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MyDialog('Đã xảy ra lỗi, vui lòng thử lại sau');
+          },
+        );
+      }
+
+      setState(() {
+        loading = false;
+      });
+      print(credential);
+    } else {
+      return showDialog(
+          context: context,
+          builder: (builder) {
+            return AlertDialog(
+                title: Text('Thông báo'), content: Text('Đăng nhập thất bại'));
+          });
+    }
+    // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
+    // after they have been validated with Apple (see `Integration` section for more information on how to do this)
+  }
+
   checkIsOnAudio() async {
     var appID = await _storage.readValue('appID');
+    var token = await _storage.readValue('token');
     setState(() {
+      token == appID ? isLogin = false : isLogin = true;
       appIDState = appID;
     });
     var _onAudio = await _storage.readValue('backgroundMusic');
@@ -232,7 +413,7 @@ class _HomeScreen extends State<Home> {
                   widthFactor: MediaQuery.of(context).size.width,
                   child: Image.asset(
                     'assets/images/bien.png',
-                    width: MediaQuery.of(context).size.width * 0.6,
+                    width: MediaQuery.of(context).size.width * 0.5,
                   ),
                 ),
                 Expanded(
@@ -277,7 +458,7 @@ class _HomeScreen extends State<Home> {
                                 overlayColor: MaterialStateColor.resolveWith(
                                     (states) => Colors.transparent)),
                             onPressed: () => {
-                                  showDialog<void>(
+                              isLogin? showDialog<void>(
                                       context: context,
                                       builder: (builder) {
                                         return ArmorialDialog(
@@ -288,6 +469,15 @@ class _HomeScreen extends State<Home> {
                                               achievementsSilver,
                                         );
                                       })
+                                  : showDialog<void>(
+                                  context: context, builder: (builder) {
+                                return LoginDialog(
+                                    loginFacebook: () {
+                                      login();
+                                    },
+                                    loginApple: () {loginWithApple();}
+                                );
+                              })
                                 }),
                         Container(
                           height: 20,
@@ -309,13 +499,22 @@ class _HomeScreen extends State<Home> {
                           onPressed: () async => {
                             if (onAudio)
                               {player = await audioCache.play('help.mp3')},
-                            showDialog<void>(
+                            isLogin? showDialog<void>(
                                 context: context,
                                 builder: (builder) {
                                   return AchievementsDialog(
                                     achievements: achievements,
                                   );
-                                })
+                                }) :
+                            showDialog<void>(
+                                context: context, builder: (builder) {
+                              return LoginDialog(
+                                  loginFacebook: (){
+                                    login();
+                                  },
+                                  loginApple: () {loginWithApple();},
+                              );
+                            })
                           },
                         ),
                       ],

@@ -5,15 +5,18 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:device_info/device_info.dart';
 import 'package:doan_hinh/api/api.dart';
 import 'package:doan_hinh/configs/routes.dart';
 import 'package:doan_hinh/constant/ad_state.dart';
 import 'package:doan_hinh/constant/constant.dart';
 import 'package:doan_hinh/constant/hexcolor.dart';
 import 'package:doan_hinh/lib/pin_code_text_field.dart';
+import 'package:doan_hinh/notification/notification.config.dart';
 import 'package:doan_hinh/screens/gamesScreen/achievements_dialog.dart';
 import 'package:doan_hinh/screens/gamesScreen/menu_dialog.dart';
 import 'package:doan_hinh/screens/gamesScreen/reward_dialog.dart';
+import 'package:doan_hinh/screens/home/home.dart';
 import 'package:doan_hinh/screens/home/loading_screen.dart';
 import 'package:doan_hinh/storage/local_storage.dart';
 import 'package:doan_hinh/storage/process_image.dart';
@@ -22,18 +25,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart';
 import 'package:open_appstore/open_appstore.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../main.dart';
 import 'armorial_dialog.dart';
 import 'help_dialog.dart';
+import 'login_dialog.dart';
 import 'notification_dialog.dart';
 
 final _storage = new LocalStorage();
+
+void audioPlayerHandler(AudioPlayerState value) => null;
 
 class GameScreen extends StatefulWidget {
 
@@ -46,6 +54,8 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreen extends State<GameScreen> {
+
+  final facebookLogin = FacebookLogin();
   BannerAd banner;
   RewardedAd myRewarded;
   TextEditingController controller = TextEditingController(text: "");
@@ -72,7 +82,7 @@ class _GameScreen extends State<GameScreen> {
   var boChuCai = '';
   var isCorrect = false;
   var wrongCharacter;
-
+  bool isLogin = false;
   var levelInt;
   var adPointInt;
   var pointAQuestion;
@@ -85,8 +95,11 @@ class _GameScreen extends State<GameScreen> {
   List<Achievements> achievementsDiamond = [];
   List<Achievements> achievementsGold = [];
   List<Achievements> achievementsSilver = [];
-  AdListener listener ;
+  AdListener listener;
+
   String iD = '';
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -94,7 +107,9 @@ class _GameScreen extends State<GameScreen> {
       if (audioCache.fixedPlayer != null) {
         audioCache.fixedPlayer.startHeadlessService();
       }
+      player.monitorNotificationStateChanges(audioPlayerHandler);
     }
+    getPlatform();
     getQuestion();
     listener = AdListener(
       // Called when an ad is successfully received.
@@ -115,7 +130,7 @@ class _GameScreen extends State<GameScreen> {
       // Called when an ad is in the process of leaving the application.
       onApplicationExit: (Ad ad) => print('Left application.'),
       // Called when a RewardedAd triggers a reward.
-      onRewardedAdUserEarnedReward: (RewardedAd ad, RewardItem reward) async{
+      onRewardedAdUserEarnedReward: (RewardedAd ad, RewardItem reward) async {
         print('reward');
         String data = '?mID=12&appID=' + appIDState;
         await get(
@@ -154,7 +169,7 @@ class _GameScreen extends State<GameScreen> {
             )
               ..load();
             myRewarded = RewardedAd(
-              adUnitId: 'ca-app-pub-3940256099942544/1712485313',
+              adUnitId: rewardAdUnitId,
               request: AdRequest(),
               listener: listener,
             )
@@ -168,12 +183,15 @@ class _GameScreen extends State<GameScreen> {
   showArmorialDialog() async {
     String getRewardDiamond = "?mID=12&iCup=3";
     final res = await get(
-        Constant.apiAdress + '/api/mobile/game.asmx/gameHuyHieu' + getRewardDiamond);
+        Constant.apiAdress + '/api/mobile/game.asmx/gameHuyHieu' +
+            getRewardDiamond);
     List<Achievements> listDiamond = [];
-    if(res.statusCode == 200) {
+    if (res.statusCode == 200) {
       List<dynamic> data = json.decode(res.body)['data'];
       data.forEach((element) {
-        listDiamond.add(Achievements(element['appLogo'].toString(), element['appName'].toString(), element['isLevel'].toString(), element['adPoint'].toString(),3));
+        listDiamond.add(Achievements(
+            element['appLogo'].toString(), element['appName'].toString(),
+            element['isLevel'].toString(), element['adPoint'].toString(), 3));
       });
       setState(() {
         achievementsDiamond = listDiamond;
@@ -181,24 +199,31 @@ class _GameScreen extends State<GameScreen> {
     }
     String getRewardGold = "?mID=12&iCup=2";
     final resGold = await get(
-        Constant.apiAdress + '/api/mobile/game.asmx/gameHuyHieu' + getRewardGold);
+        Constant.apiAdress + '/api/mobile/game.asmx/gameHuyHieu' +
+            getRewardGold);
     List<Achievements> listGold = [];
-    if(resGold.statusCode == 200) {
+    if (resGold.statusCode == 200) {
       List<dynamic> data = json.decode(res.body)['data'];
       data.forEach((element) {
-        listGold.add(Achievements(element['appLogo'].toString(), element['appName'].toString(), element['isLevel'].toString(), element['adPoint'].toString(),2));
+        listGold.add(Achievements(
+            element['appLogo'].toString(), element['appName'].toString(),
+            element['isLevel'].toString(), element['adPoint'].toString(), 2));
       });
       setState(() {
         achievementsGold = listGold;
       });
-    }String getRewardSilver = "?mID=12&iCup=1";
+    }
+    String getRewardSilver = "?mID=12&iCup=1";
     final resSilver = await get(
-        Constant.apiAdress + '/api/mobile/game.asmx/gameHuyHieu' + getRewardSilver);
+        Constant.apiAdress + '/api/mobile/game.asmx/gameHuyHieu' +
+            getRewardSilver);
     List<Achievements> listSilver = [];
-    if(resSilver.statusCode == 200) {
+    if (resSilver.statusCode == 200) {
       List<dynamic> data = json.decode(res.body)['data'];
       data.forEach((element) {
-        listSilver.add(Achievements(element['appLogo'].toString(), element['appName'].toString(), element['isLevel'].toString(), element['adPoint'].toString(),1));
+        listSilver.add(Achievements(
+            element['appLogo'].toString(), element['appName'].toString(),
+            element['isLevel'].toString(), element['adPoint'].toString(), 1));
       });
       setState(() {
         achievementsSilver = listSilver;
@@ -215,11 +240,22 @@ class _GameScreen extends State<GameScreen> {
 
   getQuestion() async {
     var appID = await _storage.readValue('appID');
+    var token = await _storage.readValue('token');
+    if (appID == token) {
+      setState(() {
+        isLogin = false;
+      });
+    } else {
+      setState(() {
+        isLogin = true;
+      });
+    }
     setState(() {
       appIDState = appID;
       isCorrect = false;
       isLoaded = false;
       listOpened = new List();
+      arraysBk = new Map();
     });
     controller.value = TextEditingValue(text: '');
     await getLevelAndPoint();
@@ -229,7 +265,7 @@ class _GameScreen extends State<GameScreen> {
     if (res.statusCode == 200) {
       print(res.body);
       var resultData = [];
-      if (json.decode(res.body)['data']['iD'] != 0) {
+      if (json.decode(res.body)['data']['iD'] != "") {
         var datajson = json.decode(res.body)['data'];
         var result = datajson['dapAnEN'].toString();
         var resultVI = datajson['dapAnVI'].toString();
@@ -292,15 +328,15 @@ class _GameScreen extends State<GameScreen> {
         Constant.apiAdress + '/api/mobile/game.asmx/getLevel' + dataGet);
     var level = json.decode(response.body)['data']['isLevel'].toString();
     var adPoint = json.decode(response.body)['data']['adPoint'].toString();
-      setState(() {
-        levelInt = level;
-        adPointInt = adPoint;
-      });
+    setState(() {
+      levelInt = level;
+      adPointInt = adPoint;
+    });
     String getReward = "?mID=12";
     final res = await get(
         Constant.apiAdress + '/api/mobile/game.asmx/gameThanhTich' + getReward);
     List<Achievements> list = [];
-    if(res.statusCode == 200) {
+    if (res.statusCode == 200) {
       List<dynamic> data = json.decode(res.body)['data'];
       data.forEach((element) {
         list.add(Achievements(element['appLogo'].toString(),
@@ -349,7 +385,7 @@ class _GameScreen extends State<GameScreen> {
           var res = await get(
               Constant.apiAdress + '/api/mobile/game.asmx/gameImgUpLevel' +
                   data);
-          if(json.decode(res.body)['message'] != 'Success') {
+          if (json.decode(res.body)['message'] != 'Success') {
             showDialog(context: context, builder: (builder) {
               return NotificationDialog(
                 closeDialog: () async {
@@ -358,7 +394,11 @@ class _GameScreen extends State<GameScreen> {
                     await audioCache.play('play.mp3');
                   }
                 },
-                content: json.decode(res.body)['message'] == 'Bac' ?'Bạc' : (json.decode(res.body)['message'] == 'Vang' ? 'Vàng' : 'Kim cương'),
+                content: json.decode(res.body)['message'] == 'Bac'
+                    ? 'Bạc'
+                    : (json.decode(res.body)['message'] == 'Vang'
+                    ? 'Vàng'
+                    : 'Kim cương'),
               );
             }
             );
@@ -467,7 +507,7 @@ class _GameScreen extends State<GameScreen> {
   }
 
   openAnswerF() async {
-    if(int.parse(adPointInt) - int.parse(moDapAn) > 0) {
+    if (int.parse(adPointInt) - int.parse(moDapAn) > 0) {
       String data = '?mID=12&appID=' + appIDState + '&isLevel=' +
           (int.parse(levelInt) + 1).toString() + '&adPoint=0';
       await get(
@@ -512,7 +552,7 @@ class _GameScreen extends State<GameScreen> {
         .length) {
       var i = -1;
       var index;
-      while(i == -1) {
+      while (i == -1) {
         index = controller.value.text.length +
             Random().nextInt(answer.length - controller.value.text.length);
         String character = answer[index];
@@ -595,6 +635,7 @@ class _GameScreen extends State<GameScreen> {
       currentText = text;
     });
   }
+
   addBackupCharacterTwoLineForDisableWrong() {
     var text1 = '';
     var text2 = '';
@@ -626,6 +667,7 @@ class _GameScreen extends State<GameScreen> {
       currentText2 = text2;
     });
   }
+
   addBackupCharacterTwoLines(int indexArrays) {
     var text1 = '';
     var text2 = '';
@@ -807,7 +849,7 @@ class _GameScreen extends State<GameScreen> {
         controller2.value = TextEditingValue(text: '');
       });
 
-      if(length2 == 0) {
+      if (length2 == 0) {
         addBackupCharacterForDisableWrong();
       } else {
         addBackupCharacterTwoLineForDisableWrong();
@@ -876,9 +918,176 @@ class _GameScreen extends State<GameScreen> {
 
     final text = 'Mọi người giúp mình với';
     final RenderBox box = context.findRenderObject();
-    Share.share('http://game.izilife.vn/games.aspx?v=' + iD,subject: text);
+    Share.share('http://game.izilife.vn/games.aspx?v=' + iD, subject: text);
     // Share.shareFiles([path], subject: text, text: text,
     //     sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+  }
+
+  bool isIpad = false;
+
+
+  Future<bool> getPlatform() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    IosDeviceInfo info = await deviceInfo.iosInfo;
+    if (info.model.toLowerCase().contains("ipad")) {
+      setState(() {
+        isIpad = true;
+      });
+    } else {
+      setState(() {
+        isIpad = false;
+      });
+    }
+  }
+
+  login() async {
+    setState(() {
+      isLoading = true;
+    });
+    final result = await facebookLogin.logIn(['email', 'public_profile']);
+    var token = await _storage.readValue('token');
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        var graphResponse = await get(
+            'https://graph.facebook.com/${result.accessToken
+                .userId}?fields=name,first_name,last_name,email&access_token=${result
+                .accessToken.token}');
+        if (graphResponse.statusCode == 200) {
+          String appID = json.decode(graphResponse.body)["email"] != null
+              ? json.decode(graphResponse.body)["email"]
+              : json.decode(graphResponse.body)["id"];
+          String appSystem = Platform.isAndroid ? "0" : "1";
+          String data = "?mID=12&appID=" +
+              appID +
+              "&avatar=https://graph.facebook.com/" +
+              result.accessToken.userId +
+              "/picture?height=200" +
+              "&hoVaTen=" +
+              json.decode(graphResponse.body)["name"] +
+              "&appSystem=" +
+              appSystem;
+
+          final res = await get(
+              'http://api.keng.com.vn/api/mobile/fbAdd.asmx/fbAdd' + data);
+          if (res.statusCode == 200) {
+            String dataFcm = "?mID=12&appID=" +
+                token +
+                "&newID=" +
+                appID;
+            await get(
+                Constant.apiAdress + '/api/mobile/game.asmx/appChange' +
+                    dataFcm);
+            _storage.writeValue('isSignIn', 'true');
+            _storage.writeValue('appID', appID);
+            _storage.deleteValue('token');
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
+          } else {
+            return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return MyDialog('Đã xảy ra lỗi, vui lòng thử lại sau');
+              },
+            );
+          }
+
+          setState(() {
+            isLoading = false;
+          });
+        }
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        setState(() {
+          isLoading = false;
+        });
+        return showDialog(
+            context: context,
+            builder: (builder) {
+              return AlertDialog(
+                  title: Text('Thông báo'),
+                  content: Text('Đăng nhập thất bại'));
+            });
+
+        break;
+      case FacebookLoginStatus.error:
+        setState(() {
+          isLoading = false;
+        });
+        print(result.errorMessage);
+        break;
+    }
+  }
+
+  loginWithApple() async {
+    setState(() {
+      isLoading = true;
+    });
+    var token = await _storage.readValue('token');
+    var credential;
+    try {
+      credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+    } catch (Exception) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+    if (credential.userIdentifier != null) {
+      String appSystem = Platform.isAndroid ? "0" : "1";
+      String appID = credential.userIdentifier;
+      String data = "?mID=12&appID=" +
+          appID +
+          "&avatar=''" +
+          "&hoVaTen=" +
+          credential.givenName +
+          "&appSystem=" +
+          appSystem;
+      final res = await get(
+          'http://api.keng.com.vn/api/mobile/fbAdd.asmx/fbAdd' + data);
+      if (res.statusCode == 200) {
+        String dataFcm = "?mID=12&appID=" +
+            token +
+            "&newID=" +
+            appID;
+        await get(
+            Constant.apiAdress + '/api/mobile/game.asmx/appChange' + dataFcm);
+        _storage.writeValue('isSignIn', 'true');
+        _storage.writeValue('appID', appID);
+        _storage.deleteValue('token');
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pop(context);
+        return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MyDialog('Đã xảy ra lỗi, vui lòng thử lại sau');
+          },
+        );
+      }
+
+      setState(() {
+        isLoading = false;
+      });
+      print(credential);
+    } else {
+      return showDialog(
+          context: context,
+          builder: (builder) {
+            return AlertDialog(
+                title: Text('Thông báo'), content: Text('Đăng nhập thất bại'));
+          });
+    }
+    // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
+    // after they have been validated with Apple (see `Integration` section for more information on how to do this)
   }
 
   @override
@@ -985,7 +1194,7 @@ class _GameScreen extends State<GameScreen> {
                                       await audioCache.play('play.mp3');
                                     }
                                   },
-                                content:''
+                                  content: ''
                               );
                             })
                           },
@@ -1005,38 +1214,55 @@ class _GameScreen extends State<GameScreen> {
                           ),
                           onPressed: () {
                             showDialog<void>(
-                              context: context, builder: (builder) {
-                                return MenuDialog(
-                                  armorial: () async {
-                                    if(onAudio) {
-                                      player = await audioCache.play('help.mp3');
-                                    }
-                                    showArmorialDialog();
-                                  },
-                                  achievements: () async {
-                                    if(onAudio) {
-                                      player = await audioCache.play('help.mp3');
-                                    }
-                                    showDialog<void>(
+                                context: context, builder: (builder) {
+                              return MenuDialog(
+                                armorial: () async {
+                                  if (onAudio) {
+                                    player = await audioCache.play('help.mp3');
+                                  }
+                                  isLogin ? showArmorialDialog() :
+                                  showDialog<void>(
                                       context: context, builder: (builder) {
+                                    return LoginDialog(
+                                        loginFacebook: () {login();},
+                                        loginApple: (){loginWithApple();},
+                                    );
+                                  });
+                                },
+                                achievements: () async {
+                                  if (onAudio) {
+                                    player = await audioCache.play('help.mp3');
+                                  }
+                                  if (isLogin) {
+                                    showDialog<void>(
+                                        context: context, builder: (builder) {
                                       return AchievementsDialog(
-                                      achievements: achievements,
+                                        achievements: achievements,
                                       );
                                     });
-                                  },
-                                  closeDialog: () {
+                                  } else {
+                                    showDialog<void>(
+                                        context: context, builder: (builder) {
+                                      return LoginDialog(
+                                          loginFacebook: (){login();},
+                                          loginApple: (){loginWithApple();},
+                                      );
+                                    });
+                                  }
+                                },
+                                closeDialog: () {
 
-                                  },
-                                  shareOnFaceBook: () {
-                                    Share.share(linkup);
-                                  },
-                                  voteGames: () {
-                                    OpenAppstore.launch(
-                                        androidAppId: linkup,
-                                        iOSAppId: linkup);
-                                  },
-                                );
-                              }
+                                },
+                                shareOnFaceBook: () {
+                                  Share.share(linkup);
+                                },
+                                voteGames: () {
+                                  OpenAppstore.launch(
+                                      androidAppId: linkup,
+                                      iOSAppId: linkup);
+                                },
+                              );
+                            }
                             );
                           },
                         ))
@@ -1055,22 +1281,22 @@ class _GameScreen extends State<GameScreen> {
                               height: percentHeight(36),
                               fit: BoxFit.fill),
                           isLoaded ? Container(
-                            margin: EdgeInsets.only(bottom: 20),
-                            child: Column(
-                              children: [
-                                Text(questionTitle, style: TextStyle(
-                                    fontSize: percentWidth(4),
-                                    fontFamily: 'Chalkboard SE',
-                                    color: Colors.brown.shade900,
-                                    fontWeight: FontWeight.bold)),
-                                Container(height: 5,),
-                                Image.network(
-                                    imgPath, width: percentWidth(81),
-                                    height: percentHeight(27),
-                                    fit: BoxFit.fill)
-                              ],
-                            )
-                          ): Container(),
+                              margin: EdgeInsets.only(bottom: 20),
+                              child: Column(
+                                children: [
+                                  Text(questionTitle, style: TextStyle(
+                                      fontSize: percentWidth(4),
+                                      fontFamily: 'Chalkboard SE',
+                                      color: Colors.brown.shade900,
+                                      fontWeight: FontWeight.bold)),
+                                  Container(height: 5,),
+                                  Image.network(
+                                      imgPath, width: percentWidth(81),
+                                      height: percentHeight(27),
+                                      fit: BoxFit.fill)
+                                ],
+                              )
+                          ) : Container(),
                         ]),
                     Column(
                         children: [
@@ -1094,18 +1320,27 @@ class _GameScreen extends State<GameScreen> {
                                         .resolveWith((states) =>
                                     Colors.transparent)
                                 ),
-                                onPressed: () async =>
+                                onPressed: () async
                                 {
-
-                                  if(onAudio) {
-                                    player = await audioCache.play('help.mp3')
-                                  },
-                                  showDialog<void>(
-                                      context: context, builder: (builder) {
-                                    return AchievementsDialog(
-                                      achievements: achievements,
-                                    );
-                                  })
+                                  if (onAudio) {
+                                    player = await audioCache.play('help.mp3');
+                                  }
+                                  if (isLogin) {
+                                    showDialog<void>(
+                                        context: context, builder: (builder) {
+                                      return AchievementsDialog(
+                                        achievements: achievements,
+                                      );
+                                    });
+                                  } else {
+                                    showDialog<void>(
+                                        context: context, builder: (builder) {
+                                      return LoginDialog(
+                                          loginFacebook: (){login();},
+                                          loginApple: (){loginWithApple();}
+                                      );
+                                    });
+                                  }
                                 },
                               )),
                           SizedBox(
@@ -1128,12 +1363,11 @@ class _GameScreen extends State<GameScreen> {
                                         .resolveWith((states) =>
                                     Colors.transparent)
                                 ),
-                                onPressed: () async =>
+                                onPressed: () async
                                 {
-
-                                  if(onAudio) {
-                                    player = await audioCache.play('help.mp3')
-                                  },
+                                  if (onAudio) {
+                                    player = await audioCache.play('help.mp3');
+                                  }
                                   showDialog<void>(
                                       context: context, builder: (builder) {
                                     return HelpDialog(
@@ -1172,7 +1406,7 @@ class _GameScreen extends State<GameScreen> {
                                           await audioCache.play('play.mp3');
                                         }
                                       },);
-                                  })
+                                  });
                                 },
                               )),
                           // SizedBox(
@@ -1368,7 +1602,10 @@ class _GameScreen extends State<GameScreen> {
                       Container(
                         child: Text('LEVEL UP !',
                             style: TextStyle(
-                                fontSize: 40,
+                                fontSize: isIpad == true ? MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width * 0.1 : 40,
                                 fontFamily: 'Chalkboard SE',
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold)),
@@ -1391,37 +1628,82 @@ class _GameScreen extends State<GameScreen> {
                         margin: EdgeInsets.fromLTRB(0, 0, 10, 0))),
                   ]
               ),
-              Text(
-                  'Bạn nhận được', style: TextStyle(fontFamily: 'Chalkboard SE',
-                  fontSize: percentWidth(8), fontWeight: FontWeight.w600,
-                  color: HexColor.fromHex('#832400')))
-              ,
-              Row(
+              isIpad ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(pointAQuestion.toString() + ' ',
-                      style: TextStyle(
-                          color: HexColor.fromHex('#501c07'),
-                          fontSize: percentWidth(10),
-                          fontFamily:
-                          'Chalkboard SE',
-                          fontWeight: FontWeight.w600)),
-                  Text('xu ',
-                      style: TextStyle(
-                          color: HexColor.fromHex('#832400'),
-                          fontSize: percentWidth(7),
-                          fontFamily:
-                          'Chalkboard SE',
-                          fontWeight: FontWeight.w600)),
-                  Image.asset(
-                    'assets/images/coin-popup.png',
-                    width:
-                    MediaQuery
-                        .of(context)
-                        .size
-                        .width *
-                        0.1,
-                  )
+                  Text(
+                      'Bạn nhận được',
+                      style: TextStyle(fontFamily: 'Chalkboard SE',
+                          fontSize: percentWidth(7.5),
+                          fontWeight: FontWeight.w600,
+                          color: HexColor.fromHex('#832400')))
+                  ,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(pointAQuestion.toString() + ' ',
+                          style: TextStyle(
+                              color: HexColor.fromHex('#501c07'),
+                              fontSize: percentWidth(9.5),
+                              fontFamily:
+                              'Chalkboard SE',
+                              fontWeight: FontWeight.w600)),
+                      Text('xu ',
+                          style: TextStyle(
+                              color: HexColor.fromHex('#832400'),
+                              fontSize: percentWidth(7),
+                              fontFamily:
+                              'Chalkboard SE',
+                              fontWeight: FontWeight.w600)),
+                      Image.asset(
+                        'assets/images/coin-popup.png',
+                        width:
+                        MediaQuery
+                            .of(context)
+                            .size
+                            .width *
+                            0.1,
+                      )
+                    ],
+                  ),
+                ],
+              ) : Column(
+                children: [
+                  Text(
+                      'Bạn nhận được',
+                      style: TextStyle(fontFamily: 'Chalkboard SE',
+                          fontSize: percentWidth(7.5),
+                          fontWeight: FontWeight.w600,
+                          color: HexColor.fromHex('#832400')))
+                  ,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(pointAQuestion.toString() + ' ',
+                          style: TextStyle(
+                              color: HexColor.fromHex('#501c07'),
+                              fontSize: percentWidth(9.5),
+                              fontFamily:
+                              'Chalkboard SE',
+                              fontWeight: FontWeight.w600)),
+                      Text('xu ',
+                          style: TextStyle(
+                              color: HexColor.fromHex('#832400'),
+                              fontSize: percentWidth(7),
+                              fontFamily:
+                              'Chalkboard SE',
+                              fontWeight: FontWeight.w600)),
+                      Image.asset(
+                        'assets/images/coin-popup.png',
+                        width:
+                        MediaQuery
+                            .of(context)
+                            .size
+                            .width *
+                            0.1,
+                      )
+                    ],
+                  ),
                 ],
               ),
               Container(

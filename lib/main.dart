@@ -20,6 +20,7 @@ import 'app.dart';
 String bannerAdUnitId = Platform.isAndroid
     ? 'ca-app-pub-3940256099942544/6300978111'
     : 'ca-app-pub-3940256099942544/2934735716';
+String rewardAdUnitId = 'ca-app-pub-3940256099942544/4806952744';
 var version = Platform.isAndroid ? '1.2' : '1.0';
 bool isVersion = true;
 var linkup = '';
@@ -37,6 +38,10 @@ void main() {
         bannerAdUnitId = Platform.isAndroid
             ? (json.decode(res.body)['data']['a_Testing'] == true ? 'ca-app-pub-3940256099942544/6300978111' : json.decode(res.body)['data']['a_BieuNgu'])
             : (json.decode(res.body)['data']['i_Testing'] == true ? 'ca-app-pub-3940256099942544/2934735716' : json.decode(res.body)['data']['i_BieuNgu']);
+
+        rewardAdUnitId = Platform.isAndroid
+            ? (json.decode(res.body)['data']['a_Testing'] == true ? 'ca-app-pub-3940256099942544/4806952744' : json.decode(res.body)['data']['a_TangThuong'])
+            : (json.decode(res.body)['data']['i_Testing'] == true ? 'ca-app-pub-3940256099942544/4806952744' : json.decode(res.body)['data']['i_TangThuong']);
         var dataVs = Platform.isAndroid
             ? json.decode(res.body)['data']['a_Version']
             : json.decode(res.body)['data']['i_Version'];
@@ -49,33 +54,14 @@ void main() {
       }
       await Firebase.initializeApp();
 
-      final _storage = new LocalStorage();
-      var isSignIn;
-      isSignIn = await _storage.readValue('isSignIn');
-
-      if(isSignIn == null) {
-        runApp(Provider.value(
-          value: adState,
-          builder: (context, child) =>
-              MaterialApp(
-                onGenerateRoute: route.generateRoute,
-                home: SignIn(), debugShowCheckedModeBanner: false,),
-        ));
-      } else {
-        runApp(Provider.value(
-          value: adState,
-          builder: (context, child) =>
-              MaterialApp(
-                onGenerateRoute: route.generateRoute,
-                home: Home(), debugShowCheckedModeBanner: false,),
-        ));
-      }
+      runApp(Provider.value(
+        value: adState,
+        builder: (context, child) => App(),
+      ));
     } else {
       runApp(Provider.value(
         value: adState,
-        builder: (context, child) => MaterialApp(
-            onGenerateRoute: route.generateRoute,
-            home: SignIn(), debugShowCheckedModeBanner: false,),
+        builder: (context, child) => App(),
       ));
     }
   });

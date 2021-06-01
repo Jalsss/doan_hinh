@@ -1,3 +1,4 @@
+import 'package:device_info/device_info.dart';
 import 'package:doan_hinh/constant/hexcolor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,27 @@ class _ArmorialDialog extends State<ArmorialDialog> {
       ),
     )])]));
   }
+  bool isIpad = false;
 
+  @override
+  void initState() {
+    super.initState();
+    getPlatform();
+  }
+
+  Future<bool> getPlatform() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    IosDeviceInfo info = await deviceInfo.iosInfo;
+    if (info.model.toLowerCase().contains("ipad")) {
+      setState(() {
+        isIpad = true;
+      });
+    } else {
+      setState(() {
+        isIpad = false;
+      });
+    }
+  }
   Widget ItemsInside(String imagePath, String name, String level, String coin,int armorial) {
     return Container(
       child: Stack(alignment: Alignment.center, children: <Widget>[
@@ -55,7 +76,8 @@ class _ArmorialDialog extends State<ArmorialDialog> {
           'assets/images/box-1.png',
           fit: BoxFit.fill,
           width: MediaQuery.of(context).size.width * 0.75,
-          height: 75,
+          height: isIpad ? MediaQuery.of(context).size.width *
+              0.13:75,
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(0, 0, 12, 0),
@@ -118,7 +140,7 @@ class _ArmorialDialog extends State<ArmorialDialog> {
                           textWidthBasis: TextWidthBasis.parent),
                       Text('Level ' + level,
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.03 :18,
                               fontFamily: 'Chalkboard SE',
                               color: Colors.black,
                               fontWeight: FontWeight.bold)),
@@ -153,8 +175,10 @@ class _ArmorialDialog extends State<ArmorialDialog> {
                         color: HexColor.fromHex('#e8d6d0'), spreadRadius: 5),
                   ],
                 ),
-                width: 70,
-                height: 80,
+                width: isIpad ? MediaQuery.of(context).size.width *
+                    0.1:70,
+                height: isIpad ? MediaQuery.of(context).size.width *
+                    0.13:80,
               ),
             ],
           ),
@@ -174,11 +198,13 @@ class _ArmorialDialog extends State<ArmorialDialog> {
         //title: Center(child: Text('Gợi ý'),),
         child: Stack(alignment: Alignment.center, children: <Widget>[
           Image.asset('assets/images/box-2.png',
-              height: 500,
+              height: isIpad ? MediaQuery.of(context).size.height *
+                  0.65 :500,
               width: MediaQuery.of(context).size.width * 0.9,
               fit: BoxFit.fill),
           Container(
-            height: 590,
+            height: isIpad ? MediaQuery.of(context).size.height *
+                0.75 :590,
             width: MediaQuery.of(context).size.width * 1,
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -189,7 +215,7 @@ class _ArmorialDialog extends State<ArmorialDialog> {
                           fit: BoxFit.fill),
                       Text('Huy hiệu',
                           style: TextStyle(
-                              fontSize: 35,
+                              fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.07 :35,
                               fontFamily: 'Chalkboard SE',
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
@@ -242,7 +268,7 @@ class _ArmorialDialog extends State<ArmorialDialog> {
                   labelColor: HexColor.fromHex('#e00000'),
                   unselectedLabelColor: Colors.black,
                   labelStyle: TextStyle(
-                      fontSize: 19,
+                      fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.03 :19,
                       fontFamily: 'Chalkboard SE',
                       fontWeight: FontWeight.bold),
 
@@ -252,7 +278,7 @@ class _ArmorialDialog extends State<ArmorialDialog> {
 
             Container(
               //Add this to give height
-              height: 300,
+              height: isIpad == true ? MediaQuery.of(context).size.height * 0.38 :300,
               child: TabBarView(children: [
                 ListItems(widget.achievementsDiamond),
                 ListItems(widget.achievementsGold),

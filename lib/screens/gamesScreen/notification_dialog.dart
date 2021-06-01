@@ -1,3 +1,4 @@
+import 'package:device_info/device_info.dart';
 import 'package:doan_hinh/constant/hexcolor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,27 @@ class _NotificationDialog extends State<NotificationDialog> {
     closeDialog();
     Navigator.of(context, rootNavigator: true).pop();
   }
+  bool isIpad = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getPlatform();
+  }
+
+  Future<bool> getPlatform() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    IosDeviceInfo info = await deviceInfo.iosInfo;
+    if (info.model.toLowerCase().contains("ipad")) {
+      setState(() {
+        isIpad = true;
+      });
+    } else {
+      setState(() {
+        isIpad = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +57,13 @@ class _NotificationDialog extends State<NotificationDialog> {
         //title: Center(child: Text('Gợi ý'),),
         child: Stack(alignment: Alignment.center, children: <Widget>[
           Image.asset('assets/images/box-2.png',
-              height: 350,
+              height: isIpad ? MediaQuery.of(context).size.height *
+                  0.6 :350,
               width: MediaQuery.of(context).size.width * 0.92,
               fit: BoxFit.fill),
           Container(
-            height: 460,
+            height: isIpad ? MediaQuery.of(context).size.height *
+                0.7 :460,
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -49,7 +73,7 @@ class _NotificationDialog extends State<NotificationDialog> {
                           fit: BoxFit.fill),
                       Text('Gợi ý',
                           style: TextStyle(
-                              fontSize: 30,
+                              fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.07 :30,
                               fontFamily: 'Chalkboard SE',
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
@@ -80,7 +104,7 @@ class _NotificationDialog extends State<NotificationDialog> {
                         'Chúc mừng bạn được nâng cấp lên huy hiệu',
                     style: TextStyle(
                       fontFamily: 'Chalkboard SE',
-                      fontSize: 18,
+                      fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.03 :18,
                       fontWeight: FontWeight.w600,
                       color: HexColor.fromHex('#832400'),
                     ),
@@ -89,7 +113,7 @@ class _NotificationDialog extends State<NotificationDialog> {
                   Text(widget.content,
                     style: TextStyle(
                     fontFamily: 'Chalkboard SE',
-                    fontSize: 40,
+                    fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.07 :40,
                     fontWeight: FontWeight.w600,
                     color: HexColor.fromHex('#d61817'),
                   )),

@@ -1,4 +1,5 @@
 
+import 'package:device_info/device_info.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -61,6 +62,29 @@ class _HelpDialog extends State<HelpDialog> {
     closeDialog();
     Navigator.of(context, rootNavigator: true).pop();
   }
+
+  bool isIpad = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getPlatform();
+  }
+
+  Future<bool> getPlatform() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    IosDeviceInfo info = await deviceInfo.iosInfo;
+    if (info.model.toLowerCase().contains("ipad")) {
+      setState(() {
+        isIpad = true;
+      });
+    } else {
+      setState(() {
+        isIpad = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -72,12 +96,16 @@ class _HelpDialog extends State<HelpDialog> {
         content: Stack(
             alignment: Alignment.center, children: <Widget>[
           Image.asset('assets/images/box-2.png',
-              height: 300,
+              // ignore: unrelated_type_equality_checks
+              height: isIpad ? MediaQuery.of(context).size.height *
+                  0.6 : 300  ,
               width:MediaQuery.of(context).size.width *
                   1,
               fit: BoxFit.fill),
           Container(
-            height: 400,
+            // ignore: unrelated_type_equality_checks
+            height:  isIpad == true ? MediaQuery.of(context).size.height *
+                0.7 : 400,
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -87,7 +115,7 @@ class _HelpDialog extends State<HelpDialog> {
                           fit: BoxFit.fill),
                       Text('Gợi ý',
                           style: TextStyle(
-                              fontSize: 30,
+                              fontSize: isIpad == true ? MediaQuery.of(context).size.width * 0.07 : 30,
                               fontFamily: 'Chalkboard SE',
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
@@ -118,16 +146,17 @@ class _HelpDialog extends State<HelpDialog> {
                   Stack(alignment: Alignment.topCenter, children: <Widget>[
                     Image.asset('assets/images/box-1.png', fit: BoxFit.fill,
                       width: MediaQuery.of(context).size.width *
-                      0.75,height: 45,),
+                      0.75,height: isIpad ? MediaQuery.of(context).size.width *
+                          0.1:45,),
                     Padding(
-                      padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
+                      padding: EdgeInsets.fromLTRB(isIpad ? MediaQuery.of(context).size.width * 0.11 : 30, 0, isIpad ? MediaQuery.of(context).size.width * 0.1 :30, 0),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Mở một chữ cái',
                               style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: isIpad ? MediaQuery.of(context).size.width * 0.05 :18,
                                   fontFamily: 'Chalkboard SE',
                                   color: Colors.brown.shade900,
                                   fontWeight: FontWeight.bold)),
@@ -154,7 +183,7 @@ class _HelpDialog extends State<HelpDialog> {
                                                           " xu",
                                                       style: TextStyle(
                                                           color: Colors.white,
-                                                          fontSize: 15,
+                                                          fontSize: isIpad ? MediaQuery.of(context).size.width * 0.032 :15,
                                                           fontFamily:
                                                               'Chalkboard SE')),
                                                   Image.asset(
@@ -184,16 +213,17 @@ class _HelpDialog extends State<HelpDialog> {
                   Stack(alignment: Alignment.topCenter, children: <Widget>[
                     Image.asset('assets/images/box-1.png', fit: BoxFit.fill,
                       width: MediaQuery.of(context).size.width *
-                        0.75,height: 45,),
+                        0.75,height: isIpad ? MediaQuery.of(context).size.width *
+                          0.1:45,),
                     Padding(
-                      padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
+                      padding: EdgeInsets.fromLTRB(isIpad ? MediaQuery.of(context).size.width * 0.11 :30, 0, isIpad ? MediaQuery.of(context).size.width * 0.1 :30, 0),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Loại bỏ chữ cái sai',
+                          Text('Bỏ chữ cái sai',
                               style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: isIpad ? MediaQuery.of(context).size.width * 0.05 :18,
                                   fontFamily: 'Chalkboard SE',
                                   color: Colors.brown.shade900,
                                   fontWeight: FontWeight.bold)),
@@ -221,7 +251,7 @@ class _HelpDialog extends State<HelpDialog> {
                                                           " xu",
                                                       style: TextStyle(
                                                           color: Colors.white,
-                                                          fontSize: 15,
+                                                          fontSize:  isIpad ? MediaQuery.of(context).size.width * 0.032 :15,
                                                           fontFamily:
                                                               'Chalkboard SE')),
                                                   Image.asset(
@@ -251,16 +281,17 @@ class _HelpDialog extends State<HelpDialog> {
                   Stack(alignment: Alignment.topCenter, children: <Widget>[
                     Image.asset('assets/images/box-1.png', fit: BoxFit.fill,
                       width: MediaQuery.of(context).size.width *
-                          0.75,height: 45,),
+                          0.75,height: isIpad ? MediaQuery.of(context).size.width *
+                          0.1:45,),
                     Padding(
-                        padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
+                        padding: EdgeInsets.fromLTRB(isIpad ? MediaQuery.of(context).size.width * 0.11 :30, 0, isIpad ? MediaQuery.of(context).size.width * 0.1 :30, 0),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Đáp án',
+                            Text('Mở đáp án',
                                 style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: isIpad ? MediaQuery.of(context).size.width * 0.05 :18,
                                     fontFamily: 'Chalkboard SE',
                                     color: Colors.brown.shade900,
                                     fontWeight: FontWeight.bold)),
@@ -289,7 +320,7 @@ class _HelpDialog extends State<HelpDialog> {
                                                             " xu",
                                                         style: TextStyle(
                                                             color: Colors.white,
-                                                            fontSize: 15,
+                                                            fontSize:  isIpad ? MediaQuery.of(context).size.width * 0.032 :15,
                                                             fontFamily:
                                                                 'Chalkboard SE')),
                                                     Image.asset(
@@ -319,7 +350,7 @@ class _HelpDialog extends State<HelpDialog> {
                   Container(height: 10,),
                   SizedBox(
                       width: MediaQuery.of(context).size.width * 0.50,
-                      height: 50,
+                      height: isIpad ? MediaQuery.of(context).size.height * 0.1 : 50,
                       child: TextButton(
                         child: Stack(
                             alignment:
@@ -332,15 +363,15 @@ class _HelpDialog extends State<HelpDialog> {
                                     .width *
                                     0.80,
                                 fit: BoxFit.fill,
-                                height: 70,
+                                height: isIpad ? MediaQuery.of(context).size.height * 0.08 : 70,
                               ),
                               Center(
                                   child: Container(
                                       child:
-                                          Text('Trợ giúp Facebook',
+                                          Text('Trợ giúp',
                                               style: TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 19,
+                                                  fontSize: isIpad ? MediaQuery.of(context).size.width * 0.033 :19,
                                                   fontFamily:
                                                   'Chalkboard SE')),
                                       margin: EdgeInsets.fromLTRB(

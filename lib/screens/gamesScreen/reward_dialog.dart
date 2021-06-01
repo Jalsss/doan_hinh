@@ -72,7 +72,7 @@ class _RewardDialog extends State<RewardDialog> {
                     height: 30,
                   ),
                   Text(
-                    widget.content + 'Xem hết quảng cáo để nhận 40 xu vàng nhé!',
+                    widget.content + 'Xem hết quảng cáo để nhận 40 xu nhé!',
                     style: TextStyle(
                       fontFamily: 'Chalkboard SE',
                       fontSize: 25,
@@ -161,6 +161,7 @@ class _RewardDialog extends State<RewardDialog> {
         ]));
   }
 }
+
 class CollectDialog extends StatefulWidget {
   CollectDialog({Key key}) : super(key: key);
 
@@ -220,15 +221,18 @@ class _CollectDialog extends State<CollectDialog> {
                   Container(
                     height: 30,
                   ),
-                  Text(
-                    'Chúc mừng bạn đã nhận được 40 vàng',
-                    style: TextStyle(
-                      fontFamily: 'Chalkboard SE',
-                      fontSize: 25,
-                      fontWeight: FontWeight.w600,
-                      color: HexColor.fromHex('#832400'),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20,right: 20),
+                    child: Text(
+                      'Chúc mừng bạn đã nhận được 40 xu',
+                      style: TextStyle(
+                        fontFamily: 'Chalkboard SE',
+                        fontSize: 25,
+                        fontWeight: FontWeight.w600,
+                        color: HexColor.fromHex('#832400'),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                   Container(
                     height: 30,
